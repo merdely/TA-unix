@@ -9,7 +9,7 @@ FORMAT='{key = $1; if (NF == 1) {value = "<notAvailable>"} else {value = $2; for
 PRINTF='{printf("%-20s  %-s\n", key, value)}'
 
 if [ "$KERNEL" = "Linux" ] ; then
-	TMP_ERROR_FILTER_FILE=$SPLUNK_HOME/var/run/splunk/unix_hardware_error_tmpfile # For filtering out lshw warning from stderr
+	TMP_ERROR_FILTER_FILE=$(mktemp) # For filtering out lshw warning from stderr
 	queryHaveCommand ip
 	FOUND_IP=$?
 	# CPUs

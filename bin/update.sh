@@ -5,18 +5,21 @@
 # shellcheck disable=SC1091
 . "$(dirname "$0")"/common.sh
 
-TMP_ERROR_FILTER_FILE=$SPLUNK_HOME/var/run/splunk/unix_update_error_tmpfile # For filering out apt warning from stderr
+TMP_ERROR_FILTER_FILE=$(mktemp) # For filering out apt warning from stderr
 
 if [ "$KERNEL" = "Linux" ] ; then
 	assertHaveCommand date
     OSName=$(cat /etc/*release | grep '\bNAME=' | cut -d '=' -f2 | tr ' ' '_' | cut -d\" -f2)
 	OS_FILE=/etc/os-release
 	# Ubuntu doesn't have yum installed by default hence apt is being used to get the list of upgradable packages
-    if [ "$OSName" = "Ubuntu" ]; then
+    if [ "$OSName" = "Ubuntu" ] || [ "$OSName" = "Debian_GNU/Linux" ]; then
 		assertHaveCommand apt
 		assertHaveCommand sed
+		# For this to work properly, add a line to /etc/sudoers like this:
+		# splunk ALL=(root) NOPASSWD: /usr/bin/apt update
+		# Without the above line, 'apt list --upgradable' will not show updated packages unless the package databases were updated outside of this script
 		# sed command here replaces '/, [, ]' with ' '
-		CMD='eval date ; eval apt list --upgradable | sed "s/\// /; s/\[/ /; s/\]/ /"'
+		CMD='eval date ; sudo -n apt update > /dev/null 2>&1 ; eval apt list --upgradable | sed "s/\// /; s/\[/ /; s/\]/ /"'
 		# shellcheck disable=SC2016
 		PARSE_0='NR==1 {DATE=$0}'
 		# shellcheck disable=SC2016
@@ -32,6 +35,18 @@ if [ "$KERNEL" = "Linux" ] ; then
 		PARSE_1='/^[\-+]+/ {header_found = 1; next}'
 		# shellcheck disable=SC2016
 		PARSE_2='header_found { gsub(/[[:space:]]*\|[[:space:]]*/, "|"); split($0, arr, /\|/); printf "%s repository=%s package=%s current_package_version=%s latest_package_version=%s sles_architecture=%s\n", DATE, arr[2], arr[3], arr[4], arr[5], arr[6]}'
+		MESSAGE="$PARSE_0 $PARSE_1 $PARSE_2"
+  elif [ "$OSName" = "Arch_Linux" ] || [ "$OSName" = "Arch_Linux_ARM" ]; then
+		assertHaveCommand checkupdates
+		assertHaveCommand sed
+		# For this to work properly, add a line to /etc/sudoers like this:
+		# splunk ALL=(root) NOPASSWD: /usr/bin/pacman -Syy
+		# Without the above line, checkupdates will not show updated packages unless the package databases were updated outside of this script (similar to Debian's apt update)
+		CMD='eval date ; eval uname -m | sed -r "s/(armv7l|aarch64)/arm64/;s/x86_64/amd64/"; sudo -n pacman -Syy > /dev/null 2>&1 ; eval checkupdates'
+		# shellcheck disable=SC2016
+		PARSE_0='NR==1 {DATE=$0}'
+		PARSE_1='NR==2 {ARCH=$0}'
+		PARSE_2='NR>2 {printf "%s arch_architecture=%s package=%s current_package_version=%s latest_package_version=%s\n", DATE, ARCH, $1, $2, $4}'
 		MESSAGE="$PARSE_0 $PARSE_1 $PARSE_2"
 	else
 		assertHaveCommand yum

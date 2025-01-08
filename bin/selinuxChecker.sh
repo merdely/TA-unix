@@ -5,7 +5,7 @@
 # shellcheck disable=SC1091
 . "$(dirname "$0")"/common.sh
 
-TMP_ERROR_FILTER_FILE=$SPLUNK_HOME/var/run/splunk/unix_selinux_error_tmpfile # For filtering out awk warning from stderr
+TMP_ERROR_FILTER_FILE=$(mktemp) # For filtering out awk warning from stderr
 PRINTF='END {printf "%s app=selinux %s %s %s %s\n", DATE, FILEHASH, SELINUX, SELINUXTYPE, SETLOCALDEFS}'
 
 if [ "$KERNEL" = "Linux" ] ; then

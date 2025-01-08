@@ -26,7 +26,7 @@ if [ "$KERNEL" = "Linux" ] ; then
 	# shellcheck disable=SC2016
 	PARSE_1='/total memory$/ {memTotalMB=$1/1024} /free memory$/ {memFreeMB+=$1/1024} /buffer memory$/ {memFreeMB+=$1/1024} /swap cache$/ {memFreeMB+=$1/1024}'
 	# shellcheck disable=SC2016
-	PARSE_2='/pages paged out$/ {pgPageOut=$1} /used swap$/ {swapUsed=$1} /free swap$/ {swapFree=$1} /pages swapped out$/ {pgSwapOut=$1}'
+	PARSE_2='/(K|pages) paged out$/ {pgPageOut=$1} /used swap$/ {swapUsed=$1} /free swap$/ {swapFree=$1} /pages swapped out$/ {pgSwapOut=$1}'
 	# shellcheck disable=SC2016
 	PARSE_3='/interrupts$/ {interrupts=$1} /CPU context switches$/ {cSwitches=$1} /forks$/ {forks=$1}'
 	# shellcheck disable=SC2016
@@ -126,9 +126,9 @@ elif [ "$KERNEL" = "HP-UX" ] ; then
 elif [ "$KERNEL" = "Darwin" ] ; then
 	assertHaveCommand sysctl
 	assertHaveCommand top
-	assertHaveCommand sar
+	assertHaveCommand vm_stat
 	# shellcheck disable=SC2016
-	CMD='eval sysctl hw.memsize ; sysctl vm.swapusage ; top -l 1 -n 0; `dirname $0`/hardware.sh; sar -gp 1 2'
+	CMD='eval sysctl hw.memsize ; sysctl vm.swapusage ; top -l 1 -n 0; `dirname $0`/hardware.sh; vm_stat | awk "/Pageouts:/{print \"pgpageout \" \$NF}/^Swapouts:/{print \"pgswapout \" \$NF}"; vm_stat -c5 1 | tail -n -4 | awk "{pi=pi+\$19;po=po+\$20;si=si+\$21;so=so+\$22}END{printf \"pginps %.2f pgoutps %.2f swinps %.2f swoups %.2f\n\",pi/4,po/4,si/4,so/4}"'
 	FUNCS='function toMB(s) {n=0+s; if (index(s,"K")) {n /= 1024} if (index(s,"G")) {n *= 1024} return n}'
 	# shellcheck disable=SC2016
 	PARSE_0='/^hw.memsize:/ {memTotalMB=$2 / (1024*1024)}'
@@ -137,24 +137,19 @@ elif [ "$KERNEL" = "Darwin" ] ; then
 	# shellcheck disable=SC2016
 	PARSE_2='/^vm.swapusage:/ {swapUsed=toMB($7); swapFree=toMB($10)}'
 	# shellcheck disable=SC2016
-	PARSE_3='/^VM:/ {pgPageOut=0+$7}'
-	if $OSX_GE_SNOW_LEOPARD; then
-		# shellcheck disable=SC2016
-		PARSE_4='/^Processes:/ {processes=$2; threads=$(NF-1)}'
-	else
-		# shellcheck disable=SC2016
-		PARSE_4='/^Processes:/ {processes=$2; threads=$(NF-2)}'
-	fi
+	PARSE_3='/^pgpageout / {pgPageOut=0+$2}'
+	# shellcheck disable=SC2016
+	PARSE_4='/^Processes:/ {processes=$2; threads=$(NF-1)}'
 	# shellcheck disable=SC2016
 	PARSE_5='/^Load Avg:/ {loadAvg1mi=0+$3}'
 	# shellcheck disable=SC2016
 	PARSE_6='/^CPU_COUNT/ {cpuCount=$2}'
 	# shellcheck disable=SC2016
-	PARSE_7='($0 ~ "Average" && $1 ~ "pgout*") {next} {pgPageOut_PS=$2}'
+	PARSE_7='$1 == "pginps" {pgPageIn_PS=$2;pgPageOut_PS=$4;pgSwapIn=$6;pgSwapOut=$8}'
 	# shellcheck disable=SC2016
-	PARSE_8='($0 ~ "Average" && $1 ~ "pgin*") {next} {pgPageIn_PS=$2}'
+	PARSE_8='/^pgswapout / {pgSwapOut=0+$2}'
 	MASSAGE="$FUNCS $PARSE_0 $PARSE_1 $PARSE_2 $PARSE_3 $PARSE_4 $PARSE_5 $PARSE_6 $PARSE_7 $PARSE_8 $DERIVE"
-	FILL_BLANKS='END {pgSwapOut=cSwitches=interrupts=interrupts_PS=forks="?"}'
+	FILL_BLANKS='END {cSwitches=interrupts=interrupts_PS=forks="0"}'
 elif [ "$KERNEL" = "FreeBSD" ] ; then
 	# shellcheck disable=SC2016
 	CMD='eval sysctl hw.physmem ; vmstat -s ; top -Sb 0; `dirname $0`/hardware.sh'

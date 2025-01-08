@@ -4,9 +4,9 @@
     "info": {
         "author": [
             {
-                "company": "Splunk, Inc.",
-                "email": "support@splunk.com",
-                "name": "Splunk, Inc."
+                "company": "erdelynet.com",
+                "email": "mike@erdelynet.com",
+                "name": "erdelynet.com"
             }
         ],
         "classification": {
@@ -25,11 +25,11 @@
             "Network Sessions": "=4.20.2",
             "Performance": "=4.20.2"
         },
-        "description": "Splunk Add-on for Unix and Linux",
+        "description": "Technical Add-on for Unix and Linux",
         "id": {
             "group": null,
-            "name": "Splunk_TA_nix",
-            "version": "9.2.0"
+            "name": "TA-nix",
+            "version": "9.2.0.1"
         },
         "license": {
             "name": "Splunk Software License Agreement",
@@ -45,9 +45,9 @@
         "releaseNotes": {
             "name": "README",
             "text": "./README.txt",
-            "uri": "https://docs.splunk.com/Documentation/AddOns/released/UnixLinux/Releasenotes"
+            "uri": "https://git.erdelynet.com/mike/TA-nix/docs/ReleaseNotes.md"
         },
-        "title": "Splunk Add-on for Unix and Linux"
+        "title": "Technical Add-on for Unix and Linux"
     },
     "inputGroups": null,
     "platformRequirements": null,

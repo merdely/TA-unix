@@ -11,9 +11,9 @@ if [ "$KERNEL" = "Linux" ] ; then
 	CMD='iostat -xky 1 1'
 	assertHaveCommand "$CMD"
 	if [ ! -f "/etc/os-release" ] ; then
-        DEFINE="-v OSName=$(cat /etc/*release | head -n 1| awk -F" release " '{print $1}'| tr ' ' '_') -v OS_version=$(cat /etc/*release | head -n 1| awk -F" release " '{print $2}' | cut -d\. -f1) -v IP_address=$(hostname -I | cut -d\  -f1)"
+        DEFINE="-v OSName=$(cat /etc/*release | head -n 1| awk -F" release " '{print $1}'| tr ' ' '_') -v OS_version=$(cat /etc/*release | head -n 1| awk -F" release " '{print $2}' | cut -d\. -f1) -v IP_address=$(ip -4 route show default | awk '{print $9}')"
     else
-        DEFINE="-v OSName=$(cat /etc/*release | grep '\bNAME=' | cut -d '=' -f2 | tr ' ' '_' | cut -d\" -f2) -v OS_version=$(cat /etc/*release | grep '\bVERSION_ID=' | cut -d '=' -f2 | cut -d\" -f2) -v IP_address=$(hostname -I | cut -d\  -f1)"
+        DEFINE="-v OSName=$(cat /etc/*release | grep '\bNAME=' | cut -d '=' -f2 | tr ' ' '_' | cut -d\" -f2) -v OS_version=$(cat /etc/*release | grep -E '\b(VERSION|BUILD)_ID=' | cut -d '=' -f2 | cut -d\" -f2) -v IP_address=$(ip -4 route show default | awk '{print $9}')"
     fi
 	FILTER='/Device/ && /r\/s/ && /w\/s/ {f=1;}f'
 	# shellcheck disable=SC2016

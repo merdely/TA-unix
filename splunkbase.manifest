@@ -1,10 +1,11 @@
 {
   "version": "1.0",
   "date": "2024-10-18T12:52:23.073000921Z",
+  "date": "2025-01-08T18:38:19.132050611Z",
   "hashAlgorithm": "SHA-256",
   "app": {
     "id": 833,
-    "version": "9.2.0",
+    "version": "9.2.0.1",
     "files": [
       {
         "path": "LICENSES/Apache-2.0.txt",
@@ -28,11 +29,11 @@
       },
       {
         "path": "VERSION",
-        "hash": "4b083d27782e80fd5bce34252adc7de9e9ab611475e170cb507e49586483025e"
+        "hash": "fd47b230df0f247b21e965b9529efd00447fdbf1cb1740848b529f79a9feacac"
       },
       {
         "path": "app.manifest",
-        "hash": "24b4bb6f47bc1472038f5c983ec91705052162da89555f52a78c9f3c830cfd82"
+        "hash": "251b481753129caea80da188d33f2b99bbd178560e136ee2936b4e9499e1416e"
       },
       {
         "path": "appserver/static/appIcon.png",
@@ -76,19 +77,19 @@
       },
       {
         "path": "bin/cpu_metric.sh",
-        "hash": "2d175a98ded5f141b20fd3b3847217447b5489b4d989512d8b8679a4f2777a0b"
+        "hash": "c5e937d91afab8ec06376a0db3c79f37e0da6377ea2b34cfde67793d89fd14d5"
       },
       {
         "path": "bin/df.sh",
-        "hash": "27b0ad779340e6bd8a26e296ce9b0b9cd2721eaadcf4669e5579560a676c9db7"
+        "hash": "15c4e33987209afe1cb807af7aecfbd522107746d318827d161d1ee233d00acf"
       },
       {
         "path": "bin/df_metric.sh",
-        "hash": "4457b92d8d8ee24441eb38df2134113f5a821111b7c3573b48313adcee39d3e8"
+        "hash": "286830c6b30cc9a3e5240e3b63db0edd2c68c9e797d452483dea09b4ad6f48e9"
       },
       {
         "path": "bin/hardware.sh",
-        "hash": "20e341826d21047e9cc3b7cd632422f6b9a0364282333616c1f912b4dddb7093"
+        "hash": "7722f446226609784d219cb525eee3ed65d622ce05122301f65625c6fd2e4434"
       },
       {
         "path": "bin/interfaces.sh",
@@ -96,7 +97,7 @@
       },
       {
         "path": "bin/interfaces_metric.sh",
-        "hash": "9458deb6ba4c56a22264df75d42945e170f6f1a729d93220617c85810733ef19"
+        "hash": "374e24c7e87669fbd25ded5e56c05fd057c0c272e03e0df6cabcd5db31267db9"
       },
       {
         "path": "bin/iostat.sh",
@@ -104,7 +105,7 @@
       },
       {
         "path": "bin/iostat_metric.sh",
-        "hash": "4af68e89e6a93fa34ccd724ff78a509b7868bc06e60a4f16a6aa24d300d8efc8"
+        "hash": "59b775cc60e92950605b621989ee17aa947adc07d407c78b657ecedf90452f77"
       },
       {
         "path": "bin/lastlog.sh",
@@ -148,15 +149,15 @@
       },
       {
         "path": "bin/ps_metric.sh",
-        "hash": "0c3dc356f47728b9b99be79fffe40256eded1644f599b1bbe8b1a9e8db05b10d"
+        "hash": "ff65aec6a98560667d08e1b75f4661d99b5255be239756f89cc72a58d1e44fe2"
       },
       {
         "path": "bin/rlog.sh",
-        "hash": "271fcaf091527670df3e794c29d7bf57d1371909c72c25d56c79dd136b029513"
+        "hash": "96d0cc8f2c0beec46bca37d7ddf73c122f76525b7363d9a2fec92125abab83a2"
       },
       {
         "path": "bin/selinuxChecker.sh",
-        "hash": "07135df789924f8d4f5ae8228ccbfe0a5e47756de202fcf00a019a12712d8312"
+        "hash": "409ad1927603069c7b08e09e60f2edf1c7e50f02eb6a64c7a514693131dc82e6"
       },
       {
         "path": "bin/service.sh",
@@ -184,7 +185,7 @@
       },
       {
         "path": "bin/update.sh",
-        "hash": "048f6e678f873d2b856ec851c52389d9f8d5ccde0fee0ead0dcf5348cc3cb587"
+        "hash": "2cce5510b8cf94e3c32681c934985a01164e2b63b64d458de9a7dc0ff81bc679"
       },
       {
         "path": "bin/uptime.sh",
@@ -200,11 +201,11 @@
       },
       {
         "path": "bin/vmstat.sh",
-        "hash": "b816aa5e67ad18b995eb577e16ca7c91ae3ecdeeb019d0b79321ade83a90daef"
+        "hash": "9ce5a407629d5d47c2c3f8b1d046f712d24a232950c54d450ddbc21bd34aea84"
       },
       {
         "path": "bin/vmstat_metric.sh",
-        "hash": "47df351e2afd7abedb49f8d38f5350ce6276fdb512005ba56e7ff9692f581515"
+        "hash": "85c516f1d73b9cb45e3b16819fada786753fa417f2fbded1955ccace62de41f8"
       },
       {
         "path": "bin/vsftpdChecker.sh",
@@ -216,7 +217,7 @@
       },
       {
         "path": "default/app.conf",
-        "hash": "451c717df6073aabd78b5ba4abb33ac71b6d61df8d46a243913b01ed9ac77040"
+        "hash": "e5c48e804d836b03361fea96c1e78f265116f5117a739f4dad9bc1916ad873f8"
       },
       {
         "path": "default/data/ui/nav/default.xml",
@@ -320,7 +321,8 @@
         "9.0",
         "9.1",
         "9.2",
-        "9.3"
+        "9.3",
+        "9.4"
       ],
       "architectures": [
         "x86_64"

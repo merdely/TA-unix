@@ -12,6 +12,8 @@ if [ "$KERNEL" = "Linux" ] ; then
 	# shellcheck disable=SC2016
 	BEGIN='BEGIN { OFS = "\t" }'
 	# shellcheck disable=SC2016
+	FILTER_PRE='$2=="btrfs"&&btrfs[$1]==1{next}$2=="btrfs"{btrfs[$1]=1}'
+	# shellcheck disable=SC2016
 	FILTER_POST='/(devtmpfs|tmpfs)/ {next}'
 	# shellcheck disable=SC2016
 	PRINTF='

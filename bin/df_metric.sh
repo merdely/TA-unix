@@ -13,12 +13,14 @@ if [ "$KERNEL" = "Linux" ] ; then
     assertHaveCommand df
     CMD='df -k --output=source,fstype,size,used,avail,pcent,itotal,iused,iavail,ipcent,target'
     if [ ! -f "/etc/os-release" ] ; then
-        DEFINE="-v OSName=$(cat /etc/*release | head -n 1| awk -F" release " '{print $1}'| tr ' ' '_') -v OS_version=$(cat /etc/*release | head -n 1| awk -F" release " '{print $2}' | cut -d\. -f1) -v IP_address=$(hostname -I | cut -d\  -f1) -v IPv6_Address=$(ip -6 -brief address show scope global | xargs | cut -d ' ' -f 3 | cut -d '/' -f 1)"
+        DEFINE="-v OSName=$(cat /etc/*release | head -n 1| awk -F" release " '{print $1}'| tr ' ' '_') -v OS_version=$(cat /etc/*release | head -n 1| awk -F" release " '{print $2}' | cut -d\. -f1) -v IP_address=$(ip -4 route show default | awk '{print $9}') -v IPv6_Address=$(ip -6 -brief address show scope global | xargs | cut -d ' ' -f 3 | cut -d '/' -f 1)"
     else
-        DEFINE="-v OSName=$(cat /etc/*release | grep '\bNAME=' | cut -d '=' -f2 | tr ' ' '_' | cut -d\" -f2) -v OS_version=$(cat /etc/*release | grep '\bVERSION_ID=' | cut -d '=' -f2 | cut -d\" -f2) -v IP_address=$(hostname -I | cut -d\  -f1) -v IPv6_Address=$(ip -6 -brief address show scope global | xargs | cut -d ' ' -f 3 | cut -d '/' -f 1)"
+        DEFINE="-v OSName=$(cat /etc/*release | grep '\bNAME=' | cut -d '=' -f2 | tr ' ' '_' | cut -d\" -f2) -v OS_version=$(cat /etc/*release | grep -E '\b(VERSION|BUILD)_ID=' | cut -d '=' -f2 | cut -d\" -f2) -v IP_address=$(ip -4 route show default | awk '{print $9}') -v IPv6_Address=$(ip -6 -brief address show scope global | xargs | cut -d ' ' -f 3 | cut -d '/' -f 1)"
     fi
     BEGIN='BEGIN { OFS = "\t" }'
     FORMAT='{OSName=OSName;OS_version=OS_version;IP_address=IP_address;IPv6_Address=IPv6_Address}'
+	# shellcheck disable=SC2016
+	FILTER_PRE='$2=="btrfs"&&btrfs[$1]==1{next}$2=="btrfs"{btrfs[$1]=1}'
 	# shellcheck disable=SC2016
 	FILTER_POST='/(devtmpfs|tmpfs)/ {next}'
     # shellcheck disable=SC2016

@@ -16,9 +16,9 @@ if [ "$KERNEL" = "Linux" ] ; then
     queryHaveCommand mpstat
     FOUND_MPSTAT=$?
     if [ ! -f "/etc/os-release" ] ; then
-        DEFINE="-v OSName=$(cat /etc/*release | head -n 1| awk -F" release " '{print $1}'| tr ' ' '_') -v OS_version=$(cat /etc/*release | head -n 1| awk -F" release " '{print $2}' | cut -d\. -f1) -v IP_address=$(hostname -I | cut -d\  -f1)"
+        DEFINE="-v OSName=$(cat /etc/*release | head -n 1| awk -F" release " '{print $1}'| tr ' ' '_') -v OS_version=$(cat /etc/*release | head -n 1| awk -F" release " '{print $2}' | cut -d\. -f1) -v IP_address=$(ip -4 route show default | awk '{print $9}')"
     else
-        DEFINE="-v OSName=$(cat /etc/*release | grep '\bNAME=' | cut -d '=' -f2 | tr ' ' '_' | cut -d\" -f2) -v OS_version=$(cat /etc/*release | grep '\bVERSION_ID=' | cut -d '=' -f2 | cut -d\" -f2) -v IP_address=$(hostname -I | cut -d\  -f1)"
+        DEFINE="-v OSName=$(cat /etc/*release | grep '\bNAME=' | cut -d '=' -f2 | tr ' ' '_' | cut -d\" -f2) -v OS_version=$(cat /etc/*release | grep -E '\b(VERSION|BUILD)_ID=' | cut -d '=' -f2 | cut -d\" -f2) -v IP_address=$(ip -4 route show default | awk '{print $9}')"
     fi
     if [ $FOUND_SAR -eq 0 ] ; then
         CMD='sar -P ALL 1 1'

@@ -7,10 +7,16 @@
 # shellcheck disable=SC1091
 . "$(dirname "$0")"/common.sh
 
-OLD_SEEK_FILE=$SPLUNK_HOME/var/run/splunk/unix_audit_seekfile # For handling upgrade scenarios
+if [ -n "$SPLUNK_DB" ]; then
+  OLD_SEEK_FILE=$SPLUNK_HOME/var/run/splunk/unix_audit_seekfile # For handling upgrade scenarios
+  SEEK_FILE=$SPLUNK_HOME/var/run/splunk/unix_audit_seektime
+else
+  # handle the case where this is not being run by the Splunk user from Splunk
+  OLD_SEEK_FILE=$HOME/.splunk_unix_audit_seekfile # For handling upgrade scenarios
+  SEEK_FILE=$HOME/.splunk_unix_audit_seektime
+fi
 CURRENT_AUDIT_FILE=/var/log/audit/audit.log # For handling upgrade scenarios
-SEEK_FILE=$SPLUNK_HOME/var/run/splunk/unix_audit_seektime
-TMP_ERROR_FILTER_FILE=$SPLUNK_HOME/var/run/splunk/unix_rlog_error_tmpfile # For filering out "no matches" error from stderr
+TMP_ERROR_FILTER_FILE=$(mktemp) # For filering out "no matches" error from stderr
 AUDIT_FILE="/var/log/audit/audit.log*"
 
 if [ "$KERNEL" = "Linux" ] ; then

@@ -66,11 +66,11 @@ elif [ "$KERNEL" = "AIX" ] ; then
     # shellcheck disable=SC2016
     FORMAT='{Name=$1; rxPackets_PS=$5; txPackets_PS=$7; rxKB_PS="?"; txKB_PS="?"}'
 elif [ "$KERNEL" = "Darwin" ] ; then
-    CMD='sar -n DEV 1 2'
+    CMD='eval ifconfig -a -u | awk "/^[^ \t]/{i=substr(\$1,1,length(\$1)-1)}/status: active/{print i}" | while read -r int; do netstat -bnI $int -w 1 | head -n3 | sed "s/^/$int/"; done'
     # shellcheck disable=SC2016
-    FILTER='($0 !~ "Average" || $0 ~ "sar" || $2~/lo[0-9]|IFACE/) {next}'
+    FILTER='$2~/^(input|packets)$/{next}'
     # shellcheck disable=SC2016
-    FORMAT='{Name=$2; rxPackets_PS=$3; txPackets_PS=$5; rxKB_PS=$4/1024; txKB_PS=$6/1024}'
+    FORMAT='{Name=$1; rxPackets_PS=$2; txPackets_PS=$5; rxKB_PS=$4/1024; txKB_PS=$7/1024}'
 elif [ "$KERNEL" = "HP-UX" ] ; then
     # Sample output: http://h20565.www2.hp.com/hpsc/doc/public/display?docId=emr_na-c02263324
     CMD='netstat -i 1 2'

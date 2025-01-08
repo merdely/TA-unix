@@ -18,9 +18,9 @@ if [ "$KERNEL" = "Linux" ] ; then
 	queryHaveCommand ip
 	FOUND_IP=$?
 	if [ ! -f "/etc/os-release" ] ; then
-        DEFINE="-v OSName=$(cat /etc/*release | head -n 1| awk -F" release " '{print $1}'| tr ' ' '_') -v OS_version=$(cat /etc/*release | head -n 1| awk -F" release " '{print $2}' | cut -d\. -f1) -v IP_address=$(hostname -I | cut -d\  -f1) -v IPv6_Address=$(ip -6 -brief address show scope global | xargs | cut -d ' ' -f 3 | cut -d '/' -f 1)"
+        DEFINE="-v OSName=$(cat /etc/*release | head -n 1| awk -F" release " '{print $1}'| tr ' ' '_') -v OS_version=$(cat /etc/*release | head -n 1| awk -F" release " '{print $2}' | cut -d\. -f1) -v IP_address=$(ip -4 route show default | awk '{print $9}') -v IPv6_Address=$(ip -6 -brief address show scope global | xargs | cut -d ' ' -f 3 | cut -d '/' -f 1)"
     else
-        DEFINE="-v OSName=$(cat /etc/*release | grep '\bNAME=' | cut -d '=' -f2 | tr ' ' '_' | cut -d\" -f2) -v OS_version=$(cat /etc/*release | grep '\bVERSION_ID=' | cut -d '=' -f2 | cut -d\" -f2) -v IP_address=$(hostname -I | cut -d\  -f1) -v IPv6_Address=$(ip -6 -brief address show scope global | xargs | cut -d ' ' -f 3 | cut -d '/' -f 1)"
+        DEFINE="-v OSName=$(cat /etc/*release | grep '\bNAME=' | cut -d '=' -f2 | tr ' ' '_' | cut -d\" -f2) -v OS_version=$(cat /etc/*release | grep -E '\b(VERSION|BUILD)_ID=' | cut -d '=' -f2 | cut -d\" -f2) -v IP_address=$(ip -4 route show default | awk '{print $9}') -v IPv6_Address=$(ip -6 -brief address show scope global | xargs | cut -d ' ' -f 3 | cut -d '/' -f 1)"
     fi
 	if [ $FOUND_IP -eq 0 ]; then
 		CMD_LIST_INTERFACES="eval ip -s a | tee $TEE_DEST|grep 'state UP' | grep mtu | grep -Ev lo | tee -a $TEE_DEST | cut -d':' -f2 | tee -a $TEE_DEST | cut -d '@' -f 1 | tee -a $TEE_DEST | sort -u | tee -a $TEE_DEST"
