@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Copyright (C) 2025 Michael Erdely All Rights Reserved.
 # SPDX-FileCopyrightText: 2024 Splunk, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -237,7 +238,7 @@ function show_inputs
     script_list=$(get_script_list)
     for line in $script_list; do
         case "$line" in
-           *unix* | *Splunk_TA_nix* ) get_scripted_input_status "$line"; input_counter=`expr $input_counter + 1`;
+           *unix* | *TA-unix* ) get_scripted_input_status "$line"; input_counter=`expr $input_counter + 1`;
         esac
     done
     echo ""
@@ -267,7 +268,7 @@ function enable_all_inputs
         fi
         if [ "$res" == "success" ] && [[ ( $line != *"_metric"* || $flag == 1 ) ]]; then
             case "$line" in
-            *unix* | *Splunk_TA_nix* ) echo "enabling $line"; input_endpoint=$(build_scripted_input_endpoint "$line"); enable_scripted_input $input_endpoint;;
+            *unix* | *TA-unix* ) echo "enabling $line"; input_endpoint=$(build_scripted_input_endpoint "$line"); enable_scripted_input $input_endpoint;;
             esac
         fi
     done
@@ -289,7 +290,7 @@ function disable_all_inputs
     script_list=$(get_script_list)
     for line in $script_list; do
         case "$line" in
-           *unix* | *Splunk_TA_nix* ) echo "disabling $line"; input_endpoint=$(build_scripted_input_endpoint "$line"); disable_scripted_input $input_endpoint;;
+           *unix* | *TA-unix* ) echo "disabling $line"; input_endpoint=$(build_scripted_input_endpoint "$line"); disable_scripted_input $input_endpoint;;
         esac
     done
     for line in $MONITOR_INPUTS; do
@@ -388,7 +389,7 @@ function clone_all_inputs
         script_list=$(get_script_list)
         for line in $script_list; do
             case "$line" in
-                *unix* | *Splunk_TA_nix* ) echo ""; echo "    cloning $line to $server_name"; echo ""; scripted_clone "$line"
+                *unix* | *TA-unix* ) echo ""; echo "    cloning $line to $server_name"; echo ""; scripted_clone "$line"
             esac
         done
         for line in $MONITOR_INPUTS; do
@@ -642,7 +643,7 @@ function select_input_menu
     script_list=$(get_script_list)
     for line in $script_list; do
         case "$line" in
-           *unix* | *Splunk_TA_nix* ) echo " $input_counter - $line"; selection_list[$input_counter]=$line; input_counter=`expr $input_counter + 1`;
+           *unix* | *TA-unix* ) echo " $input_counter - $line"; selection_list[$input_counter]=$line; input_counter=`expr $input_counter + 1`;
         esac
     done
     for line in $MONITOR_INPUTS; do
@@ -882,7 +883,7 @@ function set_unix_app_info
     for line in $app_output; do
         case "$line" in
            *unix* ) set_app_installed "unix";;
-           *Splunk_TA_nix* ) set_app_installed "Splunk_TA_nix";;
+           *TA-unix* ) set_app_installed "TA-unix";;
            *ENABLED*) set_app_enabled;;
            #*DISABLED*) set_app_disabled;;
         esac

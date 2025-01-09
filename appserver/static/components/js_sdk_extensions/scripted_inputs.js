@@ -25,7 +25,7 @@ define([
   root.ScriptedInput = root.Entity.extend({
     path: function () {
       // Approximate path - accepts reads only
-      // ex: data/inputs/script/%2FApplications%2Fsplunk_622light_unix%2Fetc%2Fapps%2FSplunk_TA_nix%2Fbin%2Fcpu.sh
+      // ex: data/inputs/script/%2FApplications%2Fsplunk_622light_unix%2Fetc%2Fapps%2FTA-unix%2Fbin%2Fcpu.sh
       return Paths.monitorInputs + '/' + encodeURIComponent(this.name)
     },
 

@@ -1,3 +1,4 @@
+# Copyright (C) 2025 Michael Erdely All Rights Reserved.
 # SPDX-FileCopyrightText: 2024 Splunk, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -20,19 +21,19 @@ class SetupService(splunk.rest.BaseRestHandler):
         sessionKey = self.sessionKey
         try:
             conf = bundle.getConf(
-                "app", sessionKey, namespace="Splunk_TA_nix", owner="nobody"
+                "app", sessionKey, namespace="TA-unix", owner="nobody"
             )
             stanza = conf.stanzas["install"].findKeys("is_configured")
             if stanza:
                 if stanza["is_configured"] == "0" or stanza["is_configured"] == "false":
                     conf["install"]["is_configured"] = "true"
                     splunk.rest.simpleRequest(
-                        "/apps/local/Splunk_TA_nix/_reload", sessionKey=sessionKey
+                        "/apps/local/TA-unix/_reload", sessionKey=sessionKey
                     )
             else:
                 conf["install"]["is_configured"] = "true"
                 splunk.rest.simpleRequest(
-                    "/apps/local/Splunk_TA_nix/_reload", sessionKey=sessionKey
+                    "/apps/local/TA-unix/_reload", sessionKey=sessionKey
                 )
         except Exception as e:
             self.response.write(e)

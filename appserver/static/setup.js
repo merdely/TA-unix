@@ -9,8 +9,8 @@ require([
   'splunkjs/mvc/simplexml/ready!',
   'underscore',
   'jquery',
-  '../app/Splunk_TA_nix/components/js_sdk_extensions/scripted_inputs',
-  '../app/Splunk_TA_nix/components/js_sdk_extensions/monitor_inputs'
+  '../app/TA-unix/components/js_sdk_extensions/scripted_inputs',
+  '../app/TA-unix/components/js_sdk_extensions/monitor_inputs'
 ], function (mvc, ignored, _, $, sdkx_scripted_inputs, sdkx_monitor_inputs) {
   var ScriptedInputs = sdkx_scripted_inputs.ScriptedInputs
   var MonitorInputs = sdkx_monitor_inputs.MonitorInputs
@@ -66,11 +66,11 @@ require([
   var monitorInputs = {}
   new MonitorInputs(service, {
     owner: '-',
-    app: 'Splunk_TA_nix',
+    app: 'TA-unix',
     sharing: 'app'
   }).fetch(function (err, inputs) {
     var inputsList = _.filter(inputs.list(), function (input) {
-      return input.namespace.app === 'Splunk_TA_nix'
+      return input.namespace.app === 'TA-unix'
     })
 
     _.each(inputsList, function (input) {
@@ -93,7 +93,7 @@ require([
   var scriptedMetricInputs = {}
   new ScriptedInputs(service, {
     owner: '-',
-    app: 'Splunk_TA_nix',
+    app: 'TA-unix',
     sharing: 'app'
   }).fetch(function (err, inputs) {
     var inputsList = _.filter(inputs.list(), function (input) {
@@ -101,7 +101,7 @@ require([
         .substring(input.name.lastIndexOf('/') + 1)
         .split('_')
       return (
-        input.namespace.app === 'Splunk_TA_nix' &&
+        input.namespace.app === 'TA-unix' &&
         input_name[input_name.length - 1] === 'metric.sh'
       )
     })
@@ -129,7 +129,7 @@ require([
   var scriptedEventInputs = {}
   new ScriptedInputs(service, {
     owner: '-',
-    app: 'Splunk_TA_nix',
+    app: 'TA-unix',
     sharing: 'app'
   }).fetch(function (err, inputs) {
     var inputsList = _.filter(inputs.list(), function (input) {
@@ -137,7 +137,7 @@ require([
         .substring(input.name.lastIndexOf('/') + 1)
         .split('_')
       return (
-        input.namespace.app === 'Splunk_TA_nix' &&
+        input.namespace.app === 'TA-unix' &&
         input_name[input_name.length - 1] !== 'metric.sh'
       )
     })

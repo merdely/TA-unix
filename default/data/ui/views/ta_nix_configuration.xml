@@ -10,15 +10,15 @@
   ||       It has no effect on Splunk Enterprise.
   -->
 <dashboard script="setup.js" stylesheet="setup.css" isVisible="false" version="1.1">
-    <label>Splunk Add-on for Unix and Linux: Setup</label>
+    <label>Technical Add-on for Unix and Linux: Setup</label>
     <row>
         <html>
             <p id="overview">
-                The Splunk Add-on for Unix and Linux provides pre-built data inputs to facilitate
+                The Technical Add-on for Unix and Linux provides pre-built data inputs to facilitate
                 Linux and Unix system monitoring using Splunk.  Check out the
-                <a href="http://apps.splunk.com/app/833/" target="_blank">
-                    Splunk for Unix Technical Add-on
-                </a> page on <a href="http://apps.splunk.com/" target="_blank">Splunkbase</a>
+		<a href="https://git.erdelynet.com/mike/TA-unix" target="_blank">
+                    Technical Add-on for Unix and Linux
+                </a> page
                 for support information, the latest updates, and more.
             </p>
 

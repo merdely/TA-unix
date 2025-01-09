@@ -1,4 +1,5 @@
 #!/bin/sh
+# Copyright (C) 2025 Michael Erdely All Rights Reserved.
 # SPDX-FileCopyrightText: 2024 Splunk, Inc.
 # SPDX-License-Identifier: Apache-2.0
 #
