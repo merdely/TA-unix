@@ -1,8 +1,19 @@
 # Technical Add-on for Unix and Linux
 
+## Version 9.2.0.4
+
+Make distro_name work everywhere
+
+Changes:
+
+* For MacOS, print MacOS for distro_name
+* For others, print $KERNEL for distro_name
+
 ## Version 9.2.0.3
 
 Fix bug in 9.2.0.2
+
+Changes:
 
 * Add code I forgot for machine_arch for Linux
 * Add Makefile to make making releases easier
