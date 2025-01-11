@@ -1,8 +1,15 @@
 TEMP_DIR := $(shell mktemp -d)
 WORK_DIR := $(TEMP_DIR)/TA-unix
-TAR_FILE := ./ta-for-unix-and-linux-`head -n1 VERSION`.tgz
+VERSION := $(shell head -n1 VERSION)
+TAR_FILE := ./ta-for-unix-and-linux-$(VERSION).tgz
 
 all: release
+
+updateversion:
+ifndef NEWVERSION
+	$(error NEWVERSION is not specified. Usage make NEWVERSION=<newversion> updateversion)
+endif
+	sed -ri "s/$(VERSION)/$(NEWVERSION)/g" app.manifest default/app.conf VERSION
 
 release:
 	mkdir -p $(WORK_DIR)

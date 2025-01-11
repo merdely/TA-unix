@@ -1,5 +1,12 @@
 # Technical Add-on for Unix and Linux
 
+## Version 9.2.0.3
+
+Fix bug in 9.2.0.2
+
+* Add code I forgot for machine_arch for Linux
+* Add Makefile to make making releases easier
+
 ## Version 9.2.0.2
 
 Improvements for version.sh

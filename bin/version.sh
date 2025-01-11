@@ -21,6 +21,8 @@ if [ "$KERNEL" = "Linux" ] ; then
 	[ -r /etc/debian_version ] && grep -Eq "^[0-9.]+$" /etc/debian_version && os_release=$(cat /etc/debian_version)
 	[ "$BUILD_ID" = "rolling" ] && os_release=rolling
 	[ "$BUILD_ID" = "rolling" ] && os_version=rolling
+	which dpkg > /dev/null 2>&1 && machine_arch=$(dpkg --print-architecture)
+	[ "$NAME" = "Arch Linux" -o "$NAME" = "Arch Linux ARM" ] && machine_arch=$(uname -m | sed -r "s/(armv7l|aarch64)/arm64/;s/x86_64/amd64/")
 
 	CMD="eval date ; eval uname -m ; eval uname -r ; eval uname -s ; eval uname -v ; echo $machine_arch; echo $os_release; echo $os_version; echo $distro_name"
 elif [ "$KERNEL" = "Darwin" ] ; then
