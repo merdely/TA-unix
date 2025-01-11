@@ -1,5 +1,15 @@
 # Technical Add-on for Unix and Linux
 
+## Version 9.2.0.2
+
+Improvements for version.sh
+
+Changes:
+
+* Include kernel_release, kernel_version, and distro_name
+* For Linux and MacOS, use actual OS versions/releases instead of
+  kernel version/release
+
 ## Version 9.2.0.1
 
 Initial fork of the Splunk Add-on for Unix and Linux
