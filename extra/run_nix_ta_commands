@@ -1,0 +1,159 @@
+#!/bin/bash
+
+# This script allows getting the Techical Add-on for Unix and Linux data into
+# Splunk from systems that are not running a Splunk Universal Forwarder.
+# This is useful for systems with small or read-only file-systems.
+#
+# ## Sample rsyslog.conf
+# # Config for handling remote logs
+# template(name="RemoteLogs" type="string" string="/share/syslog/%FROMHOST%/%$.myprogramname%/%$.myprogramname%-%$YEAR%-%$MONTH%-%$DAY%.log")
+# # Write raw messages for splunk logs
+# template(name="RawMessageOnly" type="string" string="%$.mymsg%\n")
+# # Look for logs with nix_ta to apply RawMessagesOnly and send to RemoteLogs
+# if ($syslogtag startswith 'nix_ta_') then {
+#   set $.mymsg = replace($msg, "#011", " ");
+#   action(type="omfile" dynaFile="RemoteLogs" template="RawMessageOnly"
+#     fileCreateMode="0644" dirCreateMode="0755"
+#     fileOwner="root" fileGroup="splunk"
+#     dirOwner="root" dirGroup="splunk")
+#   stop
+# }
+# # End of sample rsyslog.conf
+#
+# To use:
+# * Modify the variables below to fit your environment
+#   * ta_home: The directory you copied the Technical Add-on for Unix and Linux files
+#   * tag_prefix: The events will be sent to syslog with ${tag_prefix}SCRIPTNAME as a tag
+#   * syslog_server: The UDP syslog server to send events to
+#   * run_minute: For scripts that have intervals over an hour, which minute to run them
+#   * run_hour: For scripts that run once a day, which hour to run them
+# * Create a cron job: * * * * * /path/to/script/run_nix_ta_commands
+
+# Ensure the logger command is available
+which logger > /dev/null 2>&1 || { echo "Error: The logger command is required for this script"; exit; }
+
+ta_home=/srv/TA-unix
+tag_prefix=nix_ta_
+syslog_server=192.168.1.1
+run_minute=2
+run_hour=6
+
+# Get the current minute now to be consistent through the script run
+minute=$(date +%_M | tr -d ' ')
+# Get the current hour now to be consistent through the script run
+hour=$(date +%_H | tr -d ' ')
+# Set defaults disabling force-mode and list-mode
+force=0
+list=0
+
+usage() {
+  echo "usage: $(basename $0) [-h] [-f] [-l] [script]"
+  echo "          -h: print this help text"
+  echo "          -f: run all enabled scripts regardless of interval"
+  echo "          -l: list scripts, enabled status, and interval (if enabled)"
+  exit
+}
+
+# Get the command line options
+while getopts ":hlf" opt; do
+  case $opt in
+    f) force=1 ;;
+    l) list=1 ;;
+    *) usage ;;
+  esac
+done
+shift $((OPTIND -1))
+
+# Function to actually run the script and pipe it to logger
+runit() {
+  [ -z "$1" ] && return 1
+  if [ -x $ta_home/bin/$1.sh ]; then
+    { $ta_home/bin/$1.sh 2> /dev/null; echo; } | logger -n $syslog_server -t ${tag_prefix}$(echo $1|tr '[A-Z]' '[a-z]')
+  else
+    echo Could not find $1 in $ta_home/bin
+    return 1
+  fi
+}
+
+# Check the inputs.conf to see if any of the checks are disabled
+declare -A scripts
+declare -A intervals
+# Load defaults first
+if [ -r $ta_home/default/inputs.conf ]; then
+  eval $(awk -F '[=#]' '
+    /^\[/{name=""}
+    /^\[script:\/\//{n=split($1,a,"/");name=gensub(/\.[a-z]+\]/,"",1,a[n]);printf "scripts[%s]=1\nintervals[%s]=60\n",name,name}
+    name!="" && $1~/(^|\s*)disabled(\s*|$)/ {disabled=gensub(/(^ | $)/,"","g",gensub(/true/,"1",1,gensub(/false/,"0",1,$2)));printf "scripts[%s]=%s\n",name,disabled}
+    name!="" && $1~/(^|\s*)interval(\s*|$)/ {interval=gensub(/(^ | $)/,"","g",$2);printf "intervals[%s]=%s\n",name,interval}
+    ' $ta_home/default/inputs.conf)
+fi
+# See if any defaults are overridden in the local directory
+if [ -r $ta_home/local/inputs.conf ]; then
+  eval $(awk -F '[=#]' '
+    /^\[/{name="";disabled=1;interval=60}
+    /^\[script:\/\//{n=split($1,a,"/");name=gensub(/\.[a-z]+\]/,"",1,a[n])}
+    name!="" && $1~/(^|\s*)disabled(\s*|$)/ {disabled=gensub(/(^ | $)/,"","g",gensub(/true/,"1",1,gensub(/false/,"0",1,$2)));printf "scripts[%s]=%s\n",name,disabled}
+    name!="" && $1~/(^|\s*)interval(\s*|$)/ {interval=gensub(/(^ | $)/,"","g",$2);printf "intervals[%s]=%s\n",name,interval}
+    ' $ta_home/local/inputs.conf)
+fi
+
+# If -l, just print the scripts
+if [ $list = 1 ]; then
+  for script in "${!scripts[@]}"; do
+    if [ "${scripts[$script]}" = "0" ]; then
+      echo "$script is enabled (${intervals[$script]} seconds)"
+    else
+      echo "$script is disabled"
+    fi
+  done
+  exit
+fi
+
+# If a script is specified on the command line, run it (even if disabled)
+if [ "$1" ]; then
+  runit $1
+  exit
+fi
+
+# Without -l or -f, loop through the enabled scripts and run them at their interval
+for script in "${!scripts[@]}"; do
+  # Only run enabled scripts
+  if [ "${scripts[$script]}" = "0" ]; then
+    i=${intervals[$script]}
+    [ $i -lt 60 ] && i=60
+    min=$((i/60))
+
+    # If -f, always run each script
+    if [ $force = 1 ]; then
+      runit $script
+
+    # If interval is 60 seconds or less, run every minute
+    elif [ $min -le 1 ]; then
+      runit $script
+
+    # If the current minute is divisible by the number of interval minutes, run
+    # example: 600 is 5 minutes, it'll run at 0, 5, 10, 15, ... minutes
+    elif [ $((minute % min)) = 0 ]; then
+      runit $script
+
+    # If interval is an hour or more
+    elif [ $min -gt 60 ]; then
+      hr=$((i/60/60))
+
+      # If interval is 1 hour or less, run every hour on $run_minute
+      if [ $hr -le 1 ] && [ $minute = $run_minute ]; then
+        runit $script
+
+      # If the current hour is divisible by the number of interval hours, run
+      # example: 21600 is 6 hours, it'll run at 0, 6, 12, 18 hours
+      elif [ $((hour % hr)) = 0 ] && [ $minute = $run_minute ]; then
+        runit $script
+
+      # If the number of hours is 24 or more, run every day at $run_hour:$run_minute
+      elif [ $hr -ge 24 ] && [ $hour = $run_hour ] && [ $minute = $run_minute ]; then
+        runit $script
+      fi
+    fi
+  fi
+done
+

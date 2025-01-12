@@ -6,10 +6,10 @@ TAR_FILE := ./ta-for-unix-and-linux-$(VERSION).tgz
 all: release
 
 updateversion:
-ifndef NEWVERSION
-	$(error NEWVERSION is not specified. Usage make NEWVERSION=<newversion> updateversion)
+ifndef NEW
+	$(error NEW is not specified. Usage make NEW=<newversion> updateversion)
 endif
-	sed -ri "s/$(VERSION)/$(NEWVERSION)/g" app.manifest default/app.conf VERSION
+	sed -ri "s/$(VERSION)/$(NEW)/g" app.manifest default/app.conf VERSION
 
 release:
 	mkdir -p $(WORK_DIR)

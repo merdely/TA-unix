@@ -1,6 +1,19 @@
 # Technical Add-on for Unix and Linux
 
-## Version 9.2.0.4
+## Version 9.2.0.5 (2025-01-11)
+
+Add script for docker events/metrics and support running TA outside of Splunk
+
+Changes:
+
+* Add docker.sh and docker_metric.sh for collecting docker events/metrics
+* Add helper script to extra/ to run the TA commands on systems without
+  a Splunk forwarder. The commands can be sent to a syslog server.
+  This script is useful for systems with small or read-only filesystems that
+  cannot support a Universal Forwarder.
+* Add syslog_inputs_nix_ta app to extra/ for ingesting the data from syslog
+
+## Version 9.2.0.4 (2025-01-11)
 
 Make distro_name work everywhere
 
@@ -9,7 +22,7 @@ Changes:
 * For MacOS, print MacOS for distro_name
 * For others, print $KERNEL for distro_name
 
-## Version 9.2.0.3
+## Version 9.2.0.3 (2025-01-11)
 
 Fix bug in 9.2.0.2
 
@@ -18,7 +31,7 @@ Changes:
 * Add code I forgot for machine_arch for Linux
 * Add Makefile to make making releases easier
 
-## Version 9.2.0.2
+## Version 9.2.0.2 (2025-01-11)
 
 Improvements for version.sh
 
@@ -28,7 +41,7 @@ Changes:
 * For Linux and MacOS, use actual OS versions/releases instead of
   kernel version/release
 
-## Version 9.2.0.1
+## Version 9.2.0.1 (2025-01-09)
 
 Initial fork of the Splunk Add-on for Unix and Linux
 
