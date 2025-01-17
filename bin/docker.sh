@@ -62,8 +62,19 @@ for id in $docker_list; do
   pids[$id]=$($docker_cmd inspect -f '{{ .State.Pid }}' $id)
   read time_start[$id] _ < /proc/uptime
   read _ cpu_start[$id] < /sys/fs/cgroup/system.slice/docker-$id.scope/cpu.stat
-  while read _if _rx _ _ _ _ _ _ _ _tx _ _ _ _ _ _ _ ; do if=$_if rx_start[$id]=$_rx tx_start[$id]=$_tx; done < /proc/${pids[$id]}/net/dev
-  br_start[$id]=0;bw_start[$id]=0;while read _ _br _bw _ _ _ _; do br_start[$id]=$((${br_start[$id]}+${_br:7}));bw_start[$id]=$((${bw_start[$id]}+${_bw:7})); done < /sys/fs/cgroup/system.slice/docker-$id.scope/io.stat
+  while read _if _rx _ _ _ _ _ _ _ _tx _ _ _ _ _ _ _ ; do
+    [ -z "$_if" ] && continue
+    [ -z "$_rx" ] && _rx=0
+    [ -z "$_tx" ] && _tx=0
+    if=$_if rx_start[$id]=$_rx tx_start[$id]=$_tx
+  done < /proc/${pids[$id]}/net/dev
+  br_start[$id]=0;bw_start[$id]=0
+  while read _ _br _bw _ _ _ _; do
+    [ -z "$_br" ] && _br=rbytes=0
+    [ -z "$_bw" ] && _bw=wbytes=0
+    br_start[$id]=$((${br_start[$id]}+${_br:7}))
+    bw_start[$id]=$((${bw_start[$id]}+${_bw:7}))
+  done < /sys/fs/cgroup/system.slice/docker-$id.scope/io.stat
 done
 
 sleep 2  # Sleep 2 seconds to give the script time to get CPU stats
@@ -78,8 +89,19 @@ for id in $docker_list; do
   fi
   read cpu_stop _ < /proc/uptime
   read _ proc_stop < /sys/fs/cgroup/system.slice/docker-$id.scope/cpu.stat
-  while read _if _rx _ _ _ _ _ _ _ _tx _ _ _ _ _ _ _ ; do if=$_if NetRX=$_rx NetTX=$_tx; done < /proc/${pids[$id]}/net/dev
-  BlockRead=0;BlockWrite=0;while read _ _br _bw _ _ _ _; do BlockRead=$((BlockRead+${_br:7}));BlockWrite=$((BlockWrite+${_bw:7})); done < /sys/fs/cgroup/system.slice/docker-$id.scope/io.stat
+  while read _if _rx _ _ _ _ _ _ _ _tx _ _ _ _ _ _ _ ; do
+    [ -z "$_if" ] && continue
+    [ -z "$_rx" ] && _rx=0
+    [ -z "$_tx" ] && _tx=0
+    if=$_if NetRX=$_rx NetTX=$_tx
+  done < /proc/${pids[$id]}/net/dev
+  BlockRead=0;BlockWrite=0
+  while read _ _br _bw _ _ _ _; do
+    [ -z "$_br" ] && _br=rbytes=0
+    [ -z "$_bw" ] && _bw=wbytes=0
+    BlockRead=$((BlockRead+${_br:7}))
+    BlockWrite=$((BlockWrite+${_bw:7}))
+  done < /sys/fs/cgroup/system.slice/docker-$id.scope/io.stat
   read MemUsage < /sys/fs/cgroup/system.slice/docker-$id.scope/memory.current
   read Pids < /sys/fs/cgroup/system.slice/docker-$id.scope/pids.current
   read _ CPU < /sys/fs/cgroup/cpu.stat

@@ -1,5 +1,14 @@
 # Technical Add-on for Unix and Linux
 
+## Version 9.2.0.6 (2025-01-17)
+
+Fix docker script and props
+
+Changes:
+
+* Fix output for docker script (handle lines that didn't have values)
+* Fix props.conf LINE_BREAKER for docker
+
 ## Version 9.2.0.5 (2025-01-11)
 
 Add script for docker events/metrics and support running TA outside of Splunk
