@@ -1,5 +1,14 @@
 # Technical Add-on for Unix and Linux
 
+## Version 9.2.0.7 (2025-01-20)
+
+Fix run_nix_ta_commands script
+
+Changes:
+
+* Make run_nix_ta_commands (in extra) use /etc/nix_ta.conf for its settings
+  instead of hard-coding them in the script
+
 ## Version 9.2.0.6 (2025-01-17)
 
 Fix docker script and props
