@@ -1,5 +1,15 @@
 # Technical Add-on for Unix and Linux
 
+## Version 9.2.0.8 (2025-01-23)
+
+Fix df.sh and df_metric.sh
+
+Changes:
+
+* Fix Linux when df outputs a "-"
+* Exclude efivars partitions for Linux
+* Fix the output on Darwin to match Linux output
+
 ## Version 9.2.0.7 (2025-01-20)
 
 Fix run_nix_ta_commands script

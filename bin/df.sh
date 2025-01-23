@@ -15,7 +15,7 @@ if [ "$KERNEL" = "Linux" ] ; then
 	# shellcheck disable=SC2016
 	FILTER_PRE='$2=="btrfs"&&btrfs[$1]==1{next}$2=="btrfs"{btrfs[$1]=1}'
 	# shellcheck disable=SC2016
-	FILTER_POST='/(devtmpfs|tmpfs)/ {next}'
+	FILTER_POST='/(devtmpfs|tmpfs|efivars)/ {next}'
 	# shellcheck disable=SC2016
 	PRINTF='
 	{
@@ -217,50 +217,19 @@ elif [ "$KERNEL" = "Darwin" ] ; then
 	#Maps fsType
 	# shellcheck disable=SC2016
 	MAP_FS_TO_TYPE='/ on / {
-		for(i=1;i<=NF;i++){
-			if($i=="on" && $(i+1) ~ /^\/.*/)
-			{
+		for (i = 1; i <= NF; i++) {
+			if ($i == "on" && $(i + 1) ~ /^\/.*/)
 				key=$(i+1);
-			}
 			if($i ~ /^\(/)
-				value=substr($i,2,length($i)-2);
+				value = substr($i, 2, length($i) - 2);
 		}
-		fsTypes[key]=value;
+		fsTypes[key] = value;
 	}'
-	# Append Type and Inode headers to the main header and print respective fields from values stored in MAP_FS_TO_TYPE variables
-	# shellcheck disable=SC2016
-	PRINTF='
-	{
-		if($0 ~ /^Filesystem.*/){
-			sub("%iused","IUsePct",$0);
-
-			for(i=1;i<=NF;i++){
-				if($i=="iused") iusedCol=i;
-				if($i=="ifree") ifreeCol=i;
-
-				if($i=="Mounted" && $(i+1)=="on"){
-					mountedCol=i;
-					sub("Mounted on","MountedOn",$0);
-				}
-			}
-			$(NF+1)="Type";
-			$(NF+1)="INodes";
-			print $0;
-		}
+	PRINTF='/^Filesystem/ {
+		printf "Filesystem\tType\tSize\tUsed\tAvail\tUse%%\tInodes\tIUsed\tIFree\tIUse%%\tMountedOn\n";
 	}
-	{
-		for(i=1;i<=NF;i++)
-		{
-			if($i ~ /^\/dev\/.*s[0-9]+$/){
-				sub("^/dev/", "", $i);
-				sub("s[0-9]+$", "", $i);
-			}
-			if($i ~ /^\/\S*/ && i==mountedCol){
-				$(NF+1)=fsTypes[$mountedCol];
-				$(NF+1)=$iusedCol+$ifreeCol;
-				print $0;
-			}
-		}
+	$0 !~ /^Filesystem/ && $0 !~ / on / {
+		printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", $1, fsTypes[$NF], $2, $3, $4, $5, $6+$7, $6, $7, $8, $9;
 	}'
 
 elif [ "$KERNEL" = "FreeBSD" ] ; then

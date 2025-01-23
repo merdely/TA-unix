@@ -23,7 +23,7 @@ if [ "$KERNEL" = "Linux" ] ; then
 	# shellcheck disable=SC2016
 	FILTER_PRE='$2=="btrfs"&&btrfs[$1]==1{next}$2=="btrfs"{btrfs[$1]=1}'
 	# shellcheck disable=SC2016
-	FILTER_POST='/(devtmpfs|tmpfs)/ {next}'
+	FILTER_POST='/(devtmpfs|tmpfs|efivars)/ {next}'
     # shellcheck disable=SC2016
     PRINTF='
     function rem_pcent(val)
@@ -32,19 +32,18 @@ if [ "$KERNEL" = "Linux" ] ; then
         {val=substr(val, 1, length(val)-1); return val}
     }
     {
-		if($0 ~ /^Filesystem.*/){
+		if ($0 ~ /^Filesystem.*/) {
             sub("Mounted on","MountedOn",$0);
             $(NF+1)="OSName";
             $(NF+1)="OS_version";
             $(NF+1)="IP_address";
             $(NF+1)="IPv6_Address";
             print $0;
+		} else {
+
+       if ($10 == "-") $10 = "0%";
+       printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", $1, $2, $3, $4, $5, rem_pcent($6), $7, $8, $9, rem_pcent($10), $11, OSName, OS_version, IP_address, IPv6_Address;
 		}
-
-       match($0,/^(.*[^ ]) +([^ ]+) +([^ ]+) +([^ ]+) +([^ ]+) +([^ ]+) +([^ ]+) +([^ ]+) +([^ ]+) +([^ ]+%|-) +(.*)$/,a);
-
-       if (length(a) != 0)
-       { printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", a[1], a[2], a[3], a[4], a[5], rem_pcent(a[6]), a[7], a[8], a[9], rem_pcent(a[10]), a[11], OSName, OS_version, IP_address, IPv6_Address}
 
 	}'
 
@@ -236,63 +235,21 @@ elif [ "$KERNEL" = "Darwin" ] ; then
 	#Maps fsType
 	# shellcheck disable=SC2016
 	MAP_FS_TO_TYPE='/ on / {
-		for(i=1;i<=NF;i++){
-			if($i=="on" && $(i+1) ~ /^\/.*/)
-			{
+		for (i = 1; i <= NF; i++) {
+			if ($i == "on" && $(i + 1) ~ /^\/.*/)
 				key=$(i+1);
-			}
 			if($i ~ /^\(/)
-				value=substr($i,2,length($i)-2);
+				value = substr($i, 2, length($i) - 2);
 		}
-		fsTypes[key]=value;
+		fsTypes[key] = value;
 	}'
 	# Append Type and Inode headers to the main header and print respective fields from values stored in MAP_FS_TO_TYPE variables
     # shellcheck disable=SC2016
-    PRINTF='
-	{
-		if($0 ~ /^Filesystem.*/){
-            sub("%iused","IUsePct",$0);
-
-			for(i=1;i<=NF;i++){
-				if($i=="iused") iusedCol=i;
-				if($i=="ifree") ifreeCol=i;
-				if($i=="Mounted" && $(i+1)=="on"){
-					mountedCol=i;
-                    sub("Mounted on","MountedOn",$0);
-				}
-			}
-			$(NF+1)="Type";
-			$(NF+1)="INodes";
-            $(NF+1)="OSName";
-            $(NF+1)="OS_version";
-            $(NF+1)="IP_address";
-            $(NF+1)="IPv6_Address";
-
-
-			print $0;
-		}
+	PRINTF='/^Filesystem/ {
+		printf "Filesystem\tType\t1K-blocks\tUsed\tAvail\tUse%%\tInodes\tIUsed\tIFree\tIUse%%\tMountedOn\tOSName\tOS_version\tIP_address\tIPv6_Address\n";
 	}
-	{
-		for(i=1;i<=NF;i++)
-		{
-            if($i ~ /.*\%$/)
-                $i=substr($i, 1, length($i)-1);
-
-            if($i ~ /^\/dev\/.*s[0-9]+$/){
-				sub("^/dev/", "", $i);
-				sub("s[0-9]+$", "", $i);
-			}
-
-			if($i ~ /^\/\S*/ && i==mountedCol){
-				$(NF+1)=fsTypes[$mountedCol];
-                $(NF+1)=$iusedCol+$ifreeCol;
-                $(NF+1)=OSName;
-                $(NF+1)=OS_version;
-                $(NF+1)=IP_address;
-                $(NF+1)=IPv6_Address;
-                print $0;
-			}
-		}
+	$0 !~ /^Filesystem/ && $0 !~ / on / {
+		printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", $1, fsTypes[$NF], $2, $3, $4, substr($5, 1, length($5) - 1), $6+$7, $6, $7, substr($8, 1, length($8) - 1), $9, OSName, OS_version, IP_address, IPv6_Address;
 	}'
 
 elif [ "$KERNEL" = "FreeBSD" ] ; then
