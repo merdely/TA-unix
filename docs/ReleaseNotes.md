@@ -1,5 +1,13 @@
 # Technical Add-on for Unix and Linux
 
+## Version 9.2.0.12 (2025-01-25)
+
+Add Version to update.sh for Darwin
+
+Changes:
+
+* Add version to update.sh for Darwin
+
 ## Version 9.2.0.11 (2025-01-25)
 
 Fix Darwin Scripts and Document Sudo

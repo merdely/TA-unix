@@ -120,12 +120,16 @@ elif [ "$KERNEL" = "Darwin" ] ; then
 			gsub(/^.*Title: /, "", line);
 			gsub(/, Version:.*$/, "", line);
 			PACKAGE="package=\"" line "\""
+			version = $0;
+			gsub(/^.*Title: [^,]+, Version: /, "", version);
+			gsub(/, Size:.*$/, "", version);
+			VERSION="latest_package_version=\"" version "\""
 			RECOMMENDED=""
 			RESTART=""
 			TOTAL=TOTAL+1
 			if ( $0 ~ /Recommended: YES/ ) { RECOMMENDED="is_recommended=\"true\"" }
 			if ( $0 ~ /Action: restart/ ) { RESTART="restart_required=\"true\"" }
-			printf "%s %s %s %s\n", DATE, PACKAGE, RECOMMENDED, RESTART
+			printf "%s %s %s %s\n", DATE, PACKAGE, VERSION, RECOMMENDED, RESTART
 		}
 	}'
 
