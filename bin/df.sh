@@ -232,6 +232,30 @@ elif [ "$KERNEL" = "Darwin" ] ; then
 		printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", $1, fsTypes[$NF], $2, $3, $4, $5, $6+$7, $6, $7, $8, $9;
 	}'
 
+elif [ "$KERNEL" = "OpenBSD" ] ; then
+	assertHaveCommand mount
+	assertHaveCommand df
+	CMD='eval mount -t nodevfs,nonfs,noswap,nocd9660; df -ih -t nodevfs,nonfs,noswap,nocd9660'
+	# shellcheck disable=SC2016
+	BEGIN='BEGIN { OFS = "\t" }'
+	#Maps fsType
+	# shellcheck disable=SC2016
+	MAP_FS_TO_TYPE='/ on / {
+		for (i = 1; i <= NF; i++){
+			if ($i == "on" && $(i + 1) ~ /^\/.*/)
+				key = $(i + 1);
+		}
+		fsTypes[key] = $5;
+	}'
+	# Append Type and Inode headers to the main header and print respective fields from values stored in MAP_FS_TO_TYPE variables
+	# shellcheck disable=SC2016
+	PRINTF='/^Filesystem/ {
+		print "Filesystem\tType\tSize\tUsed\tAvail\tUse%%\tInodes\tIUsed\tIFree\tIUse%%\tMountedOn\n";
+	}
+	$0 !~ /^Filesystem/ && $0 !~ / on / {
+		printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", $1, fsTypes[$NF], $2, $3, $4, $5, $6+$7, $6, $7, $8, $9;
+	}'
+
 elif [ "$KERNEL" = "FreeBSD" ] ; then
 	assertHaveCommand mount
 	assertHaveCommand df

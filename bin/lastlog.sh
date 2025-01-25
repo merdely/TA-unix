@@ -29,6 +29,12 @@ elif [ "$KERNEL" = "Darwin" ] ; then
 	FILTER='{if ($0 == "") exit; if ($1 ~ /reboot|shutdown/ || $1 in users) next; users[$1]=1}'
 	# shellcheck disable=SC2016
 	FORMAT='{username = $1; from = ($0 !~ /                /) ? $3 : "<console>"; latest = $(NF-6) " " $(NF-5) " " $(NF-4) " " $(NF-3)}'
+elif [ "$KERNEL" = "OpenBSD" ] ; then
+	CMD='last'
+	# shellcheck disable=SC2016
+	FILTER='{if ($0 == "") exit; if ($1 ~ /reboot|shutdown/ || $1 in users) next; users[$1]=1}'
+	# shellcheck disable=SC2016
+	FORMAT='{username = $1; from = (NF==10) ? $3 : "<console>"; latest = $(NF-6) " " $(NF-5) " " $(NF-4) " " $(NF-3)}'
 elif [ "$KERNEL" = "HP-UX" ] ; then
     CMD='lastb -Rx'
 	# shellcheck disable=SC2016

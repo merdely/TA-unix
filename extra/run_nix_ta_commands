@@ -42,9 +42,9 @@ run_hour=6
 [ -r /etc/nix_ta.conf ] && . /etc/nix_ta.conf
 
 # Get the current minute now to be consistent through the script run
-minute=$(date +%_M | tr -d ' ')
+minute=$(printf "%d" $(date +%M))
 # Get the current hour now to be consistent through the script run
-hour=$(date +%_H | tr -d ' ')
+hour=$(printf "%d" $(date +%H))
 # Set defaults disabling force-mode and list-mode
 force=0
 list=0

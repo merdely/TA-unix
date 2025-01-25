@@ -29,7 +29,7 @@
         "id": {
             "group": null,
             "name": "TA-nix",
-            "version": "9.2.0.8"
+            "version": "9.2.0.9"
         },
         "license": {
             "name": "Splunk Software License Agreement",

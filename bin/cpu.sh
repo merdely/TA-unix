@@ -145,6 +145,20 @@ elif [ "$KERNEL" = "Darwin" ] ; then
                                 pctSystem = remove_char($5, "%");
                                 pctIdle = remove_char($7, "%");
                                 }'
+elif [ "$KERNEL" = "OpenBSD" ] ; then
+    CMD='eval top -1 -b; top -b'
+    assertHaveCommand "$CMD"
+    # shellcheck disable=SC2016
+    FILTER='($0 !~ "^([0-9]+[\t ]+)?CPU"){next;}'
+    # shellcheck disable=SC2016
+    FORMAT='{
+			if ($1 ~ /^[0-9]+$/)
+				name="all";
+			else if ($1 ~ /^CPU[0-9]+$/)
+				name=substr($1,4);
+			else name=0;
+				printf "%s\t%s\t%s\t%s\t%s\t%s",name,substr($3,1,length($3)-1),substr($5,1,length($5)-1),substr($7,1,length($7)-1),substr($11,1,length($11)-1),substr($13,1,length($13)-1)
+			}'
 elif [ "$KERNEL" = "FreeBSD" ] ; then
     CMD='eval top -P -d2 c; top -d2 c'
     assertHaveCommand "$CMD"

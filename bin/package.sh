@@ -46,6 +46,12 @@ elif [ "$KERNEL" = "HP-UX" ] ; then
     FILTER='/^#/ {next} $1=="" {next}'
 	# shellcheck disable=SC2016
     FORMAT='{release="?"; group="?"; vendor="?"; name=$1; version=$2; arch=$3} NF==4 {vendor=$4}'
+elif [ "$KERNEL" = "OpenBSD" ] ; then
+	CMD=pkg_info
+	HEADER='NAME                                               VERSION                                            ARCH        '
+	HEADERIZE="BEGIN {print \"$HEADER\"; arch=\"$(arch -s)\"}"
+	#PRINTF='{ printf "%-50s %-50s %s\n",$1,$2,$3}'
+	PRINTF='{name=gensub(/-[0-9].*$/,"",1,$1); suffix=gensub(/^.*-([0-9][^-]*)/,"",1,$1); if (suffix!="") suffix="," suffix; version=gensub(/^.*-([0-9][^-]*)-?.*$/,"\\1",1,$1); printf "%-50s %-50s %s\n", name suffix, version, arch}'
 elif [ "$KERNEL" = "FreeBSD" ] ; then
 	# the below syntax is valid when using zsh, bash, ksh
 	if [[ $KERNEL_RELEASE =~ 10.* ]] || [[ $KERNEL_RELEASE =~ 11.* ]] || [[ $KERNEL_RELEASE =~ 12.* ]] || [[ $KERNEL_RELEASE =~ 13.* ]]; then

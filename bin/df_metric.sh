@@ -252,6 +252,32 @@ elif [ "$KERNEL" = "Darwin" ] ; then
 		printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", $1, fsTypes[$NF], $2, $3, $4, substr($5, 1, length($5) - 1), $6+$7, $6, $7, substr($8, 1, length($8) - 1), $9, OSName, OS_version, IP_address, IPv6_Address;
 	}'
 
+elif [ "$KERNEL" = "OpenBSD" ] ; then
+	assertHaveCommand mount
+	assertHaveCommand df
+	CMD='eval mount -t nodevfs,nonfs,noswap,nocd9660; df -ih -t nodevfs,nonfs,noswap,nocd9660'
+	# Filters have been applied to get rid of IPv6 addresses designated for special usage to extract only the global IPv6 address.
+	# shellcheck disable=SC2016
+	DEFINE="-v OSName=$(uname -s) -v OS_version=$(uname -r) -v IP_address=$(ifconfig -a | grep 'inet ' | grep -v 127.0.0.1 | cut -d\  -f2 | head -n 1) -v IPv6_Address=$(ifconfig -a | grep inet6 | grep -v ' ::1 ' | grep -v ' ::1/' | grep -v ' ::1%' | grep -v ' fe80::' | grep -v ' 2002::' | grep -v ' ff00::' | head -n 1 | xargs | cut -d '/' -f 1 | cut -d '%' -f 1 | cut -d ' ' -f 2)"
+	BEGIN='BEGIN { OFS = "\t" }'
+	#Maps fsType
+	# shellcheck disable=SC2016
+	MAP_FS_TO_TYPE='/ on / {
+		for (i = 1; i <= NF; i++){
+			if ($i == "on" && $(i + 1) ~ /^\/.*/)
+				key = $(i + 1);
+		}
+		fsTypes[key] = $5;
+	}'
+	# Append Type and Inode headers to the main header and print respective fields from values stored in MAP_FS_TO_TYPE variables
+	# shellcheck disable=SC2016
+	PRINTF='/^Filesystem/ {
+		printf "Filesystem\tType\t1K-blocks\tUsed\tAvail\tUse%%\tInodes\tIUsed\tIFree\tIUse%%\tMountedOn\tOSName\tOS_version\tIP_address\tIPv6_Address\n";
+	}
+	$0 !~ /^Filesystem/ && $0 !~ / on / {
+		printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", $1, fsTypes[$NF], $2, $3, $4, substr($5, 1, length($5) - 1), $6+$7, $6, $7, substr($8, 1, length($8) - 1), $9, OSName, OS_version, IP_address, IPv6_Address;
+	}'
+
 elif [ "$KERNEL" = "FreeBSD" ] ; then
     assertHaveCommand mount
     assertHaveCommand df

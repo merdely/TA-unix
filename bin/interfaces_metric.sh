@@ -485,6 +485,30 @@ elif [ "$KERNEL" = "HP-UX" ] ; then
 		echo "$HEADER"
 		echo "$out"
 	fi
+elif [ "$KERNEL" = "OpenBSD" ] ; then
+	assertHaveCommand ifconfig
+	assertHaveCommand netstat
+
+	CMD_LIST_INTERFACES='ifconfig -a'
+	# shellcheck disable=SC2016
+	CHOOSE_ACTIVE='/^[a-z0-9]+: / {sub(":", "", $1); iface=$1} /media: / {print iface}'
+	UNIQUE='sort -u'
+	# shellcheck disable=SC2016
+	GET_MAC='{$1 == "lladdr" && mac = $2}'
+	# shellcheck disable=SC2016
+	GET_IP='/ (netmask|prefixlen) / {for (i=1; i<=NF; i++) {if ($i == "inet") IPv4 = $(i+1); if ($i == "inet6") IPv6 = $(i+1)}}'
+	out=$($CMD_LIST_INTERFACES | tee "$TEE_DEST" | awk "$CHOOSE_ACTIVE" | $UNIQUE | tee -a "$TEE_DEST")
+	lines=$(echo "$out" | wc -l)
+	INT=$(netstat -nr | awk '$1 == "default" {print $NF; exit}')
+  IP4=$(ifconfig $INT | awk '$1=="inet"{print $2;p=1;exit}END{if (p!=1) print "<n/a>"}')
+	IP6=$(ifconfig $INT | awk '$1=="inet6" && $2!~/%vio0$/{print $2;p=1;exit}END{if (p!=1) print "<n/a>"}')
+	if [ "$lines" -gt 0 ]; then
+		echo "$HEADER"
+	fi
+	for iface in $out
+	do
+    echo "$iface       $(ifconfig $iface | awk "$GET_MAC $GET_IP END {printf \"%s  %s    %s\", mac, IPv4, IPv6}")                     $(echo $(netstat -bnI $iface -w1 | head -n4 | tail -n1) $(netstat -neI $iface -w1 | head -n4 | tail -n1) | awk "{printf \"%s           %s             %s                %s             %s\", \$9, \$1, \$6, \$2, \$8}")                auto         auto           $(uname -s)                                    $(uname -r)         $IP4    $IP6"
+	done
 elif [ "$KERNEL" = "FreeBSD" ] ; then
 	assertHaveCommand ifconfig
 	assertHaveCommand netstat

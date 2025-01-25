@@ -167,6 +167,26 @@ elif [ "$KERNEL" = "Darwin" ] ; then
                                 OS_version=OS_version;
                                 IP_address=IP_address;
                                 }'
+elif [ "$KERNEL" = "OpenBSD" ] ; then
+    CMD='eval top -1 -b; top -b'
+    assertHaveCommand "$CMD"
+    # shellcheck disable=SC2016
+    FILTER='($0 !~ "^([0-9]+[\t ]+)?CPU"){next;}'
+    # shellcheck disable=SC2016
+    DEFINE="-v OSName=$(uname -s) -v OS_version=$(uname -r) -v IP_address=$(ifconfig -a | grep 'inet ' | grep -v 127.0.0.1 | cut -d\  -f2 | head -n 1)"
+    # shellcheck disable=SC2016
+    FORMAT='{
+				if ($1 ~ /^[0-9]+$/)
+					cpu="all";
+				else if ($1 ~ /^CPU[0-9]+$/)
+					cpu=substr($1,4);
+				else cpu=0;
+				pctUser=substr($3,1,length($3)-1);
+				pctNice=substr($5,1,length($5)-1);
+				pctSystem=substr($7,1,length($7)-1);
+				pctIowait=substr($11,1,length($11)-1);
+				pctIdle=substr($13,1,length($13)-1);
+			}'
 elif [ "$KERNEL" = "FreeBSD" ] ; then
     CMD='eval top -P -d2 c; top -d2 c'
     assertHaveCommand "$CMD"

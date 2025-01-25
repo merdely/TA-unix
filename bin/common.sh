@@ -71,6 +71,9 @@ case "x$KERNEL" in
         ;;
     "xFreeBSD")
         ;;
+    "xOpenBSD")
+        AWK=gawk
+        ;;
     "xAIX")
         ;;
     "xHP-UX")

@@ -63,6 +63,8 @@ elif [ "$KERNEL" = "Darwin" ] ; then
     :
 elif [ "$KERNEL" = "HP-UX" ] ; then
 	:
+elif [ "$KERNEL" = "OpenBSD" ] ; then
+	:
 elif [ "$KERNEL" = "FreeBSD" ] ; then
 	:
 fi

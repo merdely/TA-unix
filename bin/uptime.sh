@@ -18,7 +18,7 @@ fi
 
 # This should work for any POSIX-compliant system, but in case it doesn't
 # we have left the individual OS names here to be broken out later on.
-if [ "$KERNEL" = "Linux" ] || [ "$KERNEL" = "SunOS" ] || [ "$KERNEL" = "AIX" ] || [ "$KERNEL" = "HP-UX" ] || [ "$KERNEL" = "Darwin" ] || [ "$KERNEL" = "FreeBSD" ] ; then
+if [ "$KERNEL" = "Linux" ] || [ "$KERNEL" = "SunOS" ] || [ "$KERNEL" = "AIX" ] || [ "$KERNEL" = "HP-UX" ] || [ "$KERNEL" = "Darwin" ] || [ "$KERNEL" = "FreeBSD" ] || [ "$KERNEL" = "OpenBSD" ] ; then
         assertHaveCommand date
         assertHaveCommand ps
         CMD='eval date; LC_ALL=POSIX ps -o etime= -p 1'

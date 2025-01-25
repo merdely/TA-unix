@@ -22,6 +22,12 @@ elif [ "$KERNEL" = "AIX" ] ; then
 	assertHaveCommand "$CMD"
 	# considers the disks, kb_read and kb_wrtn columns and returns output of the second interval
 	FILTER='/^cd/ {next} /Disks/ && /Kb_read/ && /Kb_wrtn/ {f++;} f==2'
+elif [ "$KERNEL" = "OpenBSD" ] ; then
+	CMD='systat -B iostat'
+	assertHaveCommand "$CMD"
+	HEADER="Device  rB/s  wB/s   r/s  w/s"
+	HEADERIZE="BEGIN {print \"$HEADER\"}"
+	FILTER=$HEADERIZE'/^[^ \t]/ && !/^(DEVICE|Totals)/{printf "%-7s %.2f  %.2f  %d    %d\n", $1, $2/1024, $3/1024, $4, $5}'
 elif [ "$KERNEL" = "FreeBSD" ] ; then
 	CMD='iostat -x -c 2'
 	assertHaveCommand "$CMD"

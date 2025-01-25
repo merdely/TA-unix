@@ -65,7 +65,7 @@ elif [ "$KERNEL" = "HP-UX" ] ; then
     SECTION_TCP='inTCP && /retransmited$/ {TCPrexmits=$1} inTCP && /out of order/ {TCPreorder=$1} inTCP && /[0-9] packets received$/ {TCPpktRecv=$1} inTCP && /[0-9] packets sent$/ {TCPpktSent=$1}'
 	# shellcheck disable=SC2016
     SECTION_UDP='inUDP && /packets received/ {UDPpktRecv=$1} inUDP && /packets sent/ {UDPpktSent=$1} inUDP && /packet receive errors/ {UDPpktLost=$1} inUDP && /packets to unknown port received/ {UDPunkPort=$1}'
- elif [ "$KERNEL" = "FreeBSD" ] ; then
+ elif [ "$KERNEL" = "FreeBSD" ] || [ "$KERNEL" = "OpenBSD" ] ; then
  	# shellcheck disable=SC2016
 	FIGURE_SECTION='/^ip:$/ {inIP=1;inTCP=0;inUDP=0} /^tcp:$/ {inIP=0;inTCP=1;inUDP=0} /^udp:$/ {inIP=0;inTCP=0;inUDP=1} {if (NF==1 && $1 !~ /^ip:$|^udp:$|^tcp:$/) inIP=inTCP=inUDP=0}'
 	# shellcheck disable=SC2016

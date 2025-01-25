@@ -1,5 +1,14 @@
 # Technical Add-on for Unix and Linux
 
+## Version 9.2.0.9 (2025-01-25)
+
+Support OpenBSD
+
+Changes:
+
+* Add OpenBSD support to the scripts
+* Fix sysctl usage for FreeBSD in a couple places
+
 ## Version 9.2.0.8 (2025-01-23)
 
 Fix df.sh and df_metric.sh

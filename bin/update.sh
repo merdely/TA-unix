@@ -131,6 +131,10 @@ elif [ "$KERNEL" = "Darwin" ] ; then
 
 	MESSAGE="$PARSE_0 $PARSE_1 $PARSE_2 $PARSE_3"
 
+elif [ "$KERNEL" = "OpenBSD" ] ; then
+	CMD="eval pkg_add -usv 2>&1 | grep -vE '(Adding quirks-|pkg_add should be run as root)' | grep ^Adding | sed -E 's/^Adding ([^:]+:)?(.*)->(.*)\(pretending\)/\2 \3/' | while read pkg ver; do name=\$(pkg_info -P \$pkg | grep -A1 ^Pkgpath:|tail -n1|cut -d/ -f2-); date \"+%a %b %e %H:%M:%S %Z %Y arch_architecture=\$(arch -s) package=\$name current_package_version=\$(echo \$pkg | sed -E \"s/\$name-//\") latest_package_version=\$ver\"; done"
+	#CMD="eval for f in \$(pkg_add -usv 2>&1 | grep -vE \"(Adding quirks-|pkg_add should be run as root)\" | grep ^Adding | sed -E \"s/^Adding ([^:]+:)?(.*)->(.*)\(pretending\)/\2 \3/\"); do echo \$f; done"
+	MESSAGE="{print}"
 else
 	# Exits
 	failUnsupportedScript

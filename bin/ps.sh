@@ -6,7 +6,7 @@
 . "$(dirname "$0")"/common.sh
 
 # shellcheck disable=SC2166
-if [ "$KERNEL" = "Linux" -o "$KERNEL" = "Darwin" -o "$KERNEL" = "FreeBSD" ] ; then
+if [ "$KERNEL" = "Linux" -o "$KERNEL" = "Darwin" -o "$KERNEL" = "FreeBSD" -o "$KERNEL" = "OpenBSD" ] ; then
     assertHaveCommand ps
     CMD='ps auxww'
 elif [ "$KERNEL" = "AIX" ] ; then

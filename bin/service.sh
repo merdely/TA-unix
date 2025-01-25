@@ -187,6 +187,22 @@ elif [ "$KERNEL" = "Darwin" ] ; then
 
 	POSTPROCESS='END { if (SPLUNKD==0) { printf "%s app=\"Splunk\" StartMode=Disabled\n", DATE } }'
 
+elif [ "$KERNEL" = "OpenBSD" ] ; then
+  enabled=" $(/usr/sbin/rcctl ls on) "
+  failed=" $(doas /usr/sbin/rcctl ls failed) "
+  rogue=" $(doas /usr/sbin/rcctl ls rogue) "
+  running=" $(doas /usr/sbin/rcctl ls started) "
+  for svc in $(/usr/sbin/rcctl ls all); do
+    enabled=false
+    echo $enabled | grep " $svc " && enabled=true
+    failed=false
+    echo $enabled | grep " $svc " && failed=true
+    rogue=false
+    echo $enabled | grep " $svc " && rogue=true
+    state=stopped
+    echo $enabled | grep " $svc " && state=running
+    date "+%a %b %e %H:%M:%S %Z %Y type=rcctl app=$svc, enabled=$enabled, failed=$failed, rogue=$rogue, running=$running"
+  done
 else
 	# Exits
 	failUnsupportedScript

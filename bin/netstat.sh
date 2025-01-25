@@ -39,7 +39,7 @@ elif [ "$KERNEL" = "Darwin" ] ; then
 	FORMAT='{gsub("[46]", "", $1)}'
 elif [ "$KERNEL" = "HP-UX" ] ; then
     CMD='eval netstat -an | egrep "tcp|udp"'
-elif [ "$KERNEL" = "FreeBSD" ] ; then
+elif [ "$KERNEL" = "FreeBSD" ] || [ "$KERNEL" = "OpenBSD" ] ; then
 	# shellcheck disable=SC2089
 	CMD='eval netstat -an | egrep "tcp|udp"'
 	# shellcheck disable=SC2016

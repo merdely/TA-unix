@@ -162,6 +162,27 @@ elif [ "$KERNEL" = "Darwin" ] ; then
 	PARSE_8='/^pgswapout / {pgSwapOut=0+$2}'
 	MESSAGE="$FUNCS $PARSE_0 $PARSE_1 $PARSE_2 $PARSE_3 $PARSE_4 $PARSE_5 $PARSE_6 $PARSE_7 $PARSE_8 $DERIVE"
 	FILL_BLANKS='END {cSwitches=interrupts=interrupts_PS=forks="0"}'
+elif [ "$KERNEL" = "OpenBSD" ] ; then
+	# shellcheck disable=SC2016
+	CMD='eval sysctl -n hw.physmem ; vmstat -s ; top -Sb 0; `dirname $0`/hardware.sh'
+	DEFINE="-v OSName=$(uname -s) -v OS_version=$(uname -r) -v IP_address=$(ifconfig -a | grep 'inet ' | grep -v 127.0.0.1 | cut -d\  -f2 | head -n 1)"
+	FUNCS='function toMB(s) {n=0+s; if (index(s,"K")) {n /= 1024} if (index(s,"G")) {n *= 1024} return n}'
+	# shellcheck disable=SC2016
+	PARSE_0='(NR==1) {memTotalMB=$1 / (1024*1024)}'
+	# shellcheck disable=SC2016
+	PARSE_1='/pages being paged out$/ {pgPageOut+=$1} /forks$/ {forks+=$1} /cpu context switches$/ {cSwitches+=$1} /interrupts$/ {interrupts+=$1}'
+	# shellcheck disable=SC2016
+	PARSE_2='/load averages:/ {loadAvg1mi=$3} /^[0-9]+ processes: / {processes=$1}'
+	# shellcheck disable=SC2016
+	PARSE_3='/Swap: / { split($10, a, "/"); swapTotal=toMB(a[2]); swapUsed=toMB(a[1]); swapFree=swapTotal-swapFree; } /^Memory: / {memFreeMB=toMB($6)}'
+	# shellcheck disable=SC2016
+	PARSE_4='/^CPU_COUNT/ {cpuCount=$2}'
+	# shellcheck disable=SC2016
+	PARSE_5='($3 ~ "INTR") {nr1[NR+3]} NR in nr1 {interrupts_PS=$3}'
+	# shellcheck disable=SC2016
+	PARSE_6='($3 ~ "pgpgin*") {nr2[NR+3]} NR in nr2 {pgPageIn_PS=$3; pgPageOut_PS=$4}'
+	MESSAGE="$FUNCS $PARSE_0 $PARSE_1 $PARSE_2 $PARSE_3 $PARSE_4 $PARSE_5 $PARSE_6 $DERIVE"
+	FILL_BLANKS='END {threads=pgSwapOut="?"}'
 elif [ "$KERNEL" = "FreeBSD" ] ; then
 	# shellcheck disable=SC2016
 	CMD='eval sysctl hw.physmem ; vmstat -s ; top -Sb 0; `dirname $0`/hardware.sh'

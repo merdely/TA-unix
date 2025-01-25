@@ -8,7 +8,7 @@
 . "$(dirname "$0")"/common.sh
 
 # shellcheck disable=SC2166
-if [ "$KERNEL" = "Linux" -o "$KERNEL" = "Darwin" -o "$KERNEL" = "FreeBSD" ] ; then
+if [ "$KERNEL" = "Linux" -o "$KERNEL" = "Darwin" -o "$KERNEL" = "FreeBSD" -o "$KERNEL" = "OpenBSD" ] ; then
     assertHaveCommand ps
     CMD='ps auxww'
     if [ "$KERNEL" = "Linux" ] ; then
@@ -17,7 +17,7 @@ if [ "$KERNEL" = "Linux" -o "$KERNEL" = "Darwin" -o "$KERNEL" = "FreeBSD" ] ; th
         else
             DEFINE="-v OSName=$(cat /etc/*release | grep '\bNAME=' | cut -d '=' -f2 | tr ' ' '_' | cut -d\" -f2) -v OS_version=$(cat /etc/*release | grep -E '\b(VERSION|BUILD)_ID=' | cut -d '=' -f2 | cut -d\" -f2) -v IP_address=$(ip -4 route show default | awk '{print $9}') -v IPv6_Address=$(ip -6 -brief address show scope global | xargs | cut -d ' ' -f 3 | cut -d '/' -f 1)"
         fi
-    elif [ "$KERNEL" = "Darwin" -o "$KERNEL" = "FreeBSD" ] ; then
+    elif [ "$KERNEL" = "Darwin" -o "$KERNEL" = "FreeBSD" -o "$KERNEL" = "OpenBSD" ] ; then
         # Filters have been applied to get rid of IPv6 addresses designated for special usage to extract only the global IPv6 address.
         DEFINE="-v OSName=$(uname -s) -v OS_version=$(uname -r) -v IP_address=$(ifconfig -a | grep 'inet ' | grep -v 127.0.0.1 | cut -d\  -f2 | head -n 1) -v IPv6_Address=$(ifconfig -a | grep inet6 | grep -v ' ::1 ' | grep -v ' ::1/' | grep -v ' ::1%' | grep -v ' fe80::' | grep -v ' 2002::' | grep -v ' ff00::' | head -n 1 | xargs | cut -d '/' -f 1 | cut -d '%' -f 1 | cut -d ' ' -f 2)"
     fi

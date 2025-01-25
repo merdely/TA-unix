@@ -6,8 +6,9 @@
 . "$(dirname "$0")"/common.sh
 
 SSH_CONFIG_FILE=""
-if [ "$KERNEL" = "Linux" ] || [ "$KERNEL" = "SunOS" ] ; then
+if [ "$KERNEL" = "Linux" ] || [ "$KERNEL" = "SunOS" ] || [ "$KERNEL" = "OpenBSD" ] ; then
 	SSH_CONFIG_FILE=/etc/ssh/sshd_config
+	[ "$KERNEL" = "OpenBSD" ] && SPLUNK_HOME=/usr
 elif [ "$KERNEL" = "Darwin" ] ; then
 	SSH_CONFIG_FILE=/etc/sshd_config
 else

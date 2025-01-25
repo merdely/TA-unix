@@ -51,6 +51,8 @@ elif [ "$KERNEL" = "Darwin" ] && [ $FOUND_SNTP -eq 0 ] ; then # Mac OS 10.14.6 o
 	echo "CONFIG=$CONFIG, SERVER=$SERVER" >> "$TEE_DEST"
 
 #With Chrony
+elif [ "$KERNEL" = "OpenBSD" ]; then
+	CMD2="ntpctl -s all"
 else
 	CMD2="chronyc -n sources"
 fi

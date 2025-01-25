@@ -188,6 +188,29 @@ elif [ "$KERNEL" = "HP-UX" ] ; then
     OUTPUT=$(swapinfo -tm)
     MEMORY_REAL=$(echo "$OUTPUT" | awk '$1=="memory" {print $2 " MB"; exit}')
     MEMORY_SWAP=$(echo "$OUTPUT" | awk '$1=="dev" {print $2 " MB"; exit}')
+elif [ "$KERNEL" = "OpenBSD" ] ; then
+	assertHaveCommand sysctl
+	assertHaveCommand df
+	assertHaveCommand ifconfig
+	assertHaveCommand dmesg
+	assertHaveCommand top
+	# CPUs
+	CPU_TYPE=$(sysctl -n hw.model)
+	CPU_CACHE=
+	CPU_COUNT=$(sysctl -n hw.ncpu)
+	# HDs
+	HARD_DRIVES=$(df -h | awk '/^\/dev/ {sub("^.*\134/", "", $1); drives[$1] = $2} END {for(d in drives) printf("%s: %s; ", d, drives[d])}')
+	# NICs
+	IFACE_NAME=$(ifconfig -a | awk '/^[a-z0-9]+: / {sub(":", "", $1); iface=$1} /media: / {print iface}')
+	for NIC in $IFACE_NAME; do
+		NIC=$(echo $NIC | sed -E 's/[0-9]+$//')
+		NIC_TYPE="$NIC_TYPE,$(whatis $NIC | sed -E 's/^.* - //')"
+	done
+	NIC_TYPE=${NIC_TYPE#,}
+	NIC_COUNT=$(echo $IFACE_NAME | wc -w)
+	# memory
+	MEMORY_REAL=$(sysctl -n hw.physmem)
+	MEMORY_SWAP=$(systat -b swap | gawk '/^DISK/{p=1;next}p==1{swap+=$2}END{print int(swap/2)}')
 elif [ "$KERNEL" = "FreeBSD" ] ; then
 	assertHaveCommand sysctl
 	assertHaveCommand df
@@ -195,9 +218,9 @@ elif [ "$KERNEL" = "FreeBSD" ] ; then
 	assertHaveCommand dmesg
 	assertHaveCommand top
 	# CPUs
-	CPU_TYPE=$(sysctl hw.model | sed 's/^.*: //')
+	CPU_TYPE=$(sysctl -n hw.model)
 	CPU_CACHE=
-	CPU_COUNT=$(sysctl hw.ncpu | sed 's/^.*: //')
+	CPU_COUNT=$(sysctl -n hw.ncpu)
 	# HDs
 	HARD_DRIVES=$(df -h | awk '/^\/dev/ {sub("^.*\134/", "", $1); drives[$1] = $2} END {for(d in drives) printf("%s: %s; ", d, drives[d])}')
 	# NICs
@@ -205,7 +228,7 @@ elif [ "$KERNEL" = "FreeBSD" ] ; then
 	NIC_TYPE=$(dmesg | awk '(index($0, iface) && index($0, " port ")) {sub("^.*<", ""); sub(">.*$", ""); print $0}' iface="$IFACE_NAME" | head -1)
 	NIC_COUNT=$(ifconfig -a | grep -c media)
 	# memory
-	MEMORY_REAL=$(sysctl hw.physmem | awk '{print $2/(1024*1024) "MB"}')
+	MEMORY_REAL=$(sysctl -n hw.physmem)
 	MEMORY_SWAP=$(top -Sb 0 | awk '/^Swap: / {print $2 "B"}')
 fi
 

@@ -79,6 +79,10 @@ elif [ "$KERNEL" = "HP-UX" ] ; then
     FILTER='($0 ~ "Name|sar| lo") {next}'
     # shellcheck disable=SC2016
     FORMAT='{Name=$1; rxPackets_PS=$5; txPackets_PS=$7; rxKB_PS=?; txKB_PS=?}'
+elif [ "$KERNEL" = "OpenBSD" ] ; then
+    CMD='eval ifconfig -a | awk "/UP/ && /RUNNING/ && \$1 != \"lo0:\" {print substr(\$1, 1, length(\$1) - 1)}" | while read -r int; do echo $int $(netstat -bnI $int -w 1 | head -n4 | tail -n1) $(netstat -nI $int -w 1 | head -n 4 | tail -n1 ); done'
+    # shellcheck disable=SC2016
+    FORMAT='{Name=$1; rxPackets_PS=$6; txPackets_PS=$8; rxKB_PS=$2/1024; txKB_PS=$2/1024}'
 elif [ "$KERNEL" = "FreeBSD" ] ; then
     CMD='sar -n DEV 1 2'
     # shellcheck disable=SC2016

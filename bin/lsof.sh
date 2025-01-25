@@ -5,6 +5,11 @@
 # shellcheck disable=SC1091
 . "$(dirname "$0")"/common.sh
 
+if [ "$KERNEL" = "OpenBSD" ] ; then
+	fstat | awk '/^USER/{print "COMMAND PID USER FD MOUNT"} $5 ~ /^\// {print $2, $3, $1, $4, $5} $5 !~ /^\// && !/^USER/ {print $2, $3, $1, $4, $5, $6, $7, $8, $9, $10, $11}'
+	exit 0
+fi
+
 assertHaveCommand lsof
 CMD='lsof -nPs +c 0'
 

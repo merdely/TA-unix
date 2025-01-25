@@ -52,7 +52,7 @@ elif [ "$KERNEL" = "HP-UX" ] ; then
     FORMAT='{gsub("[46]", "", $1); proto=$1; sub("^.*[^0-9]", "", $4); port=$4}'
 	# shellcheck disable=SC2016
     FILTER='{if ($4 == "") next}'
-elif [ "$KERNEL" = "FreeBSD" ] ; then
+elif [ "$KERNEL" = "FreeBSD" ] || [ "$KERNEL" = "OpenBSD" ] ; then
 # shellcheck disable=SC2089
 	CMD='eval netstat -ln | egrep "^tcp|^udp"'
 	HEADERIZE="BEGIN {print \"$HEADER\"}"

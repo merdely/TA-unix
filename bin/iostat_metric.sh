@@ -35,6 +35,13 @@ elif [ "$KERNEL" = "AIX" ] ; then
 	FILTER='/^cd/ {next} /Disks/ && /Kb_read/ && /Kb_wrtn/ {f++;} f==2'
     # shellcheck disable=SC2016
 	PRINTF='{if ($0~/Disks/ && /Kb_read/ && /Kb_wrtn/) {printf "%s OSName OS_version IP_address \n", $0} else if (NF!=0) {printf "%s %s %s %s\n", $0, OSName, OS_version/1000, IP_address}}'
+elif [ "$KERNEL" = "OpenBSD" ] ; then
+	CMD='systat -B iostat'
+	assertHaveCommand "$CMD"
+	DEFINE="-v OSName=$(uname -s) -v OS_version=$(uname -r) -v IP_address=$(ifconfig $(netstat -nr | awk '$1 == "default" {print $NF; exit}') | awk '$1=="inet"{print $2;p=1;exit}END{if (p!=1) print "<n/a>"}')"
+	HEADER="Device  rB/s  wB/s   r/s  w/s  OSName   OS_version IP_address"
+	HEADERIZE="BEGIN {print \"$HEADER\"}"
+	FILTER=$HEADERIZE'/^[^ \t]/ && !/^(DEVICE|Totals)/{printf "%-7s %.2f  %.2f  %d    %d     %s  %s        %s\n", $1, $2/1024, $3/1024, $4, $5, OSName, OS_version, IP_address}'
 elif [ "$KERNEL" = "FreeBSD" ] ; then
 	CMD='iostat -x -c 2'
 	assertHaveCommand "$CMD"

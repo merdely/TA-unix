@@ -32,7 +32,7 @@ elif [ "$KERNEL" = "Darwin" ] ; then
 	assertHaveCommand sw_vers
 	os_release=$(sw_vers --productVersion)
 	CMD="eval date ; echo MacOS ; eval uname -m ; eval uname -r ; eval uname -s ; eval uname -v ; eval uname -p; echo $os_release; echo $os_release"
-elif [ "$KERNEL" = "SunOS" ]  [ "$KERNEL" = "FreeBSD" ] ; then
+elif [ "$KERNEL" = "SunOS" ] || [ "$KERNEL" = "FreeBSD" ] || [ "$KERNEL" = "OpenBSD" ] ; then
 	assertHaveCommand date
 	assertHaveCommand uname
 	CMD='eval date ; echo $KERNEL ; eval uname -m ; eval uname -r ; eval uname -s ; eval uname -v ; eval uname -p;'
