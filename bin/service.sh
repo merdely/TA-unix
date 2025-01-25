@@ -128,9 +128,18 @@ elif [ "$KERNEL" = "Darwin" ] ; then
 	CMD='eval date ; ls -1 /System/Library/StartupItems/ /Library/StartupItems/'
 	# Get per-user startup items
 	# shellcheck disable=SC2044
-	for PLIST_FILE in $(find /Users -name "loginwindow.plist") ; do
-		CMD=$CMD' ; echo '$PLIST_FILE': ; defaults read '$PLIST_FILE
-	done
+	# For this to work properly when run as non-root, add a line to
+	# an /etc/sudoers.d file (eg - /etc/sudoers.d/splunk) like this:
+	#   splunk ALL=(root) NOPASSWD: /usr/bin/find /Users -name loginwindow.plist
+	if [ $(id -u) != 0 ]; then
+		for PLIST_FILE in $(sudo -n /usr/bin/find /Users -name loginwindow.plist) ; do
+			CMD=$CMD' ; echo '$PLIST_FILE': ; defaults read '$PLIST_FILE
+		done
+	else
+		for PLIST_FILE in $(/usr/bin/find /Users -name loginwindow.plist) ; do
+			CMD=$CMD' ; echo '$PLIST_FILE': ; defaults read '$PLIST_FILE
+		done
+	fi
 	# shellcheck disable=SC2016
 	PARSE_0='NR==1 {DATE=$0}'
 	# Retrieve path for system startup items

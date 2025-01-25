@@ -1,5 +1,15 @@
 # Technical Add-on for Unix and Linux
 
+## Version 9.2.0.11 (2025-01-25)
+
+Fix Darwin Scripts and Document Sudo
+
+Changes:
+
+* Use sudo in service.sh for Darwin to find user services if not running as root
+* Fix parsing the output of softwareupdate command on Darwin in update.sh
+* Better document usage of sudo in docs/Sudo.md
+
 ## Version 9.2.0.10 (2025-01-25)
 
 Fix OpenBSD Support and Other Bugs

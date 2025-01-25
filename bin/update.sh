@@ -21,9 +21,9 @@ if [ "$KERNEL" = "Linux" ] ; then
 		# Without the above line, 'apt list --upgradable' will not show updated packages unless the package databases were updated outside of this script
 		# sed command here replaces '/, [, ]' with ' '
 		if [ $(id -u) != 0 ]; then
-			CMD='eval date ; sudo -n apt update > /dev/null 2>&1 ; eval apt list --upgradable | sed "s/\// /; s/\[/ /; s/\]/ /"'
+			CMD='eval date ; sudo -n /usr/bin/apt update > /dev/null 2>&1 ; eval apt list --upgradable | sed "s/\// /; s/\[/ /; s/\]/ /"'
 		else
-			CMD='eval date ; apt update > /dev/null 2>&1 ; eval apt list --upgradable | sed "s/\// /; s/\[/ /; s/\]/ /"'
+			CMD='eval date ; /usr/bin/apt update > /dev/null 2>&1 ; eval apt list --upgradable | sed "s/\// /; s/\[/ /; s/\]/ /"'
 		fi
 		# shellcheck disable=SC2016
 		PARSE_0='NR==1 {DATE=$0}'
@@ -48,9 +48,9 @@ if [ "$KERNEL" = "Linux" ] ; then
 		#   splunk ALL=(root) NOPASSWD: /usr/bin/pacman -Syy
 		# Without the above line, checkupdates will not show updated packages unless the package databases were updated outside of this script (similar to Debian's apt update)
 		if [ $(id -u) != 0 ]; then
-			CMD='eval date ; eval uname -m | sed -r "s/(armv7l|aarch64)/arm64/;s/x86_64/amd64/"; sudo -n pacman -Syy > /dev/null 2>&1 ; eval checkupdates'
+			CMD='eval date ; eval uname -m | sed -r "s/(armv7l|aarch64)/arm64/;s/x86_64/amd64/"; sudo -n /usr/bin/pacman -Syy > /dev/null 2>&1 ; eval checkupdates'
 		else
-			CMD='eval date ; eval uname -m | sed -r "s/(armv7l|aarch64)/arm64/;s/x86_64/amd64/"; pacman -Syy > /dev/null 2>&1 ; eval checkupdates'
+			CMD='eval date ; eval uname -m | sed -r "s/(armv7l|aarch64)/arm64/;s/x86_64/amd64/"; /usr/bin/pacman -Syy > /dev/null 2>&1 ; eval checkupdates'
 		fi
 		# shellcheck disable=SC2016
 		PARSE_0='NR==1 {DATE=$0}'
@@ -103,7 +103,7 @@ elif [ "$KERNEL" = "Darwin" ] ; then
 	assertHaveCommand date
 	assertHaveCommand softwareupdate
 
-	CMD='eval date ; softwareupdate -l'
+	CMD='eval date ; softwareupdate -l 2>&1 | grep -v "XType: Using static font registry"'
 	# shellcheck disable=SC2016
 	PARSE_0='NR==1 {
 		DATE=$0
@@ -115,14 +115,16 @@ elif [ "$KERNEL" = "Darwin" ] ; then
 	# of the update. Otherwise, print the update.
 	# shellcheck disable=SC2016
 	PARSE_1='NR>1 && PROCESS==1 && $0 !~ /^[[:blank:]]*$/ {
-		if ( $0 ~ /^[[:blank:]]*\*/ ) {
-			PACKAGE="package=\"" $2 "\""
+		if ( $1 == "Title:" ) {
+			line = $0;
+			gsub(/^.*Title: /, "", line);
+			gsub(/, Version:.*$/, "", line);
+			PACKAGE="package=\"" line "\""
 			RECOMMENDED=""
 			RESTART=""
 			TOTAL=TOTAL+1
-		} else {
-			if ( $0 ~ /recommended/ ) { RECOMMENDED="is_recommended=\"true\"" }
-			if ( $0 ~ /restart/ ) { RESTART="restart_required=\"true\"" }
+			if ( $0 ~ /Recommended: YES/ ) { RECOMMENDED="is_recommended=\"true\"" }
+			if ( $0 ~ /Action: restart/ ) { RESTART="restart_required=\"true\"" }
 			printf "%s %s %s %s\n", DATE, PACKAGE, RECOMMENDED, RESTART
 		}
 	}'
