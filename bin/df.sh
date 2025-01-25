@@ -250,7 +250,7 @@ elif [ "$KERNEL" = "OpenBSD" ] ; then
 	# Append Type and Inode headers to the main header and print respective fields from values stored in MAP_FS_TO_TYPE variables
 	# shellcheck disable=SC2016
 	PRINTF='/^Filesystem/ {
-		print "Filesystem\tType\tSize\tUsed\tAvail\tUse%%\tInodes\tIUsed\tIFree\tIUse%%\tMountedOn\n";
+		print "Filesystem\tType\tSize\tUsed\tAvail\tUse%\tInodes\tIUsed\tIFree\tIUse%\tMountedOn";
 	}
 	$0 !~ /^Filesystem/ && $0 !~ / on / {
 		printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", $1, fsTypes[$NF], $2, $3, $4, $5, $6+$7, $6, $7, $8, $9;

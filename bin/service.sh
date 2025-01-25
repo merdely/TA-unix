@@ -188,10 +188,21 @@ elif [ "$KERNEL" = "Darwin" ] ; then
 	POSTPROCESS='END { if (SPLUNKD==0) { printf "%s app=\"Splunk\" StartMode=Disabled\n", DATE } }'
 
 elif [ "$KERNEL" = "OpenBSD" ] ; then
+  # For this to work when running as a non-root user, add the following
+  # to /etc/doas.conf (replacing USERNAME with the user running the script):
+  #   permit nopass USERNAME cmd /usr/sbin/rcctl args ls started
+  #   permit nopass USERNAME cmd /usr/sbin/rcctl args ls failed
+  #   permit nopass USERNAME cmd /usr/sbin/rcctl args ls rogue
+  if [ $(id -u) != 0 ]; then
+    failed=" $(doas -n /usr/sbin/rcctl ls failed) "
+    rogue=" $(doas -n /usr/sbin/rcctl ls rogue) "
+    running=" $(doas -n /usr/sbin/rcctl ls started) "
+  else
+    failed=" $(/usr/sbin/rcctl ls failed) "
+    rogue=" $(/usr/sbin/rcctl ls rogue) "
+    running=" $(/usr/sbin/rcctl ls started) "
+  fi
   enabled=" $(/usr/sbin/rcctl ls on) "
-  failed=" $(doas /usr/sbin/rcctl ls failed) "
-  rogue=" $(doas /usr/sbin/rcctl ls rogue) "
-  running=" $(doas /usr/sbin/rcctl ls started) "
   for svc in $(/usr/sbin/rcctl ls all); do
     enabled=false
     echo $enabled | grep " $svc " && enabled=true

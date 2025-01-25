@@ -1,5 +1,22 @@
 # Technical Add-on for Unix and Linux
 
+## Version 9.2.0.10 (2025-01-25)
+
+Fix OpenBSD Support and Other Bugs
+
+Changes:
+
+* Fix OpenBSD cpu.sh output to match others
+* Fix OpenBSD df.sh output (no need for %% here)
+* Do not use sudo or doas when running as root
+* Use #!/usr/bin/env bash to support OpenBSD in run_nix_ta_commands
+* Fix rsyslog example to trim whitespace in run_nix_ta_commands
+* Add /usr/local/sbin:/usr/local/bin to PATH in run_nix_ta_commands
+* Fix getting hour and minute for OpenBSD in run_nix_ta_commands
+  "08" shows up to printf as octal
+* Support difference in OpenBSD logger command:
+  Requires modifying /etc/syslog.conf and setting facility in /etc/nix_ta.conf
+
 ## Version 9.2.0.9 (2025-01-25)
 
 Support OpenBSD

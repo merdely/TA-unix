@@ -1,17 +1,17 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # This script allows getting the Techical Add-on for Unix and Linux data into
 # Splunk from systems that are not running a Splunk Universal Forwarder.
 # This is useful for systems with small or read-only file-systems.
 #
-# ## Sample rsyslog.conf
+# ## Sample rsyslog.conf:
 # # Config for handling remote logs
 # template(name="RemoteLogs" type="string" string="/share/syslog/%FROMHOST%/%$.myprogramname%/%$.myprogramname%-%$YEAR%-%$MONTH%-%$DAY%.log")
 # # Write raw messages for splunk logs
 # template(name="RawMessageOnly" type="string" string="%$.mymsg%\n")
 # # Look for logs with nix_ta to apply RawMessagesOnly and send to RemoteLogs
 # if ($syslogtag startswith 'nix_ta_') then {
-#   set $.mymsg = replace($msg, "#011", " ");
+#   set $.mymsg = ltrim(rtrim(replace($msg, "#011", " ")));
 #   action(type="omfile" dynaFile="RemoteLogs" template="RawMessageOnly"
 #     fileCreateMode="0644" dirCreateMode="0755"
 #     fileOwner="root" fileGroup="splunk"
@@ -20,17 +20,30 @@
 # }
 # # End of sample rsyslog.conf
 #
-# To use:
+# ## run_nix_ta_commands configuration file
 # * Create a new file (/etc/nix_ta.conf) with the following settings in it
 #   * ta_home: The directory you copied the Technical Add-on for Unix and Linux files
 #   * tag_prefix: The events will be sent to syslog with ${tag_prefix}SCRIPTNAME as a tag
 #   * syslog_server: The UDP syslog server to send events to
 #   * run_minute: For scripts that have intervals over an hour, which minute to run them
 #   * run_hour: For scripts that run once a day, which hour to run them
-# * Create a cron job: * * * * * /path/to/script/run_nix_ta_commands
+#   * facility: For logger commands like OpenBSD that do not support pointing to a syslog_server directly
+#               Set to something like "local3.info"
+#
+# ## Using syslog facility instead of specifying a syslog server with logger
+# Using $facility when logger does not support specifying $syslog_server:
+# Modify local syslog server to send logs for $facility to the $syslog_server
+# On OpenBSD, an example for /etc/syslog.conf is:
+#   local3.*                             @192.168.1.1
+#
+# ## Cron job example:
+#   * * * * * /path/to/script/run_nix_ta_commands
 
 # Ensure the logger command is available
 which logger > /dev/null 2>&1 || { echo "Error: The logger command is required for this script"; exit; }
+
+# Ensure PATH has correct paths
+export PATH=$PATH:/usr/local/sbin:/usr/local/bin
 
 # Example/default settings -- override in /etc/nix_ta.conf
 ta_home=/srv/TA-unix
@@ -38,13 +51,14 @@ tag_prefix=nix_ta_
 syslog_server=192.168.1.1
 run_minute=2
 run_hour=6
+facility=
 
 [ -r /etc/nix_ta.conf ] && . /etc/nix_ta.conf
 
 # Get the current minute now to be consistent through the script run
-minute=$(printf "%d" $(date +%M))
+minute=$(printf "%d" $((10#$(date +%M))))
 # Get the current hour now to be consistent through the script run
-hour=$(printf "%d" $(date +%H))
+hour=$(printf "%d" $((10#$(date +%H))))
 # Set defaults disabling force-mode and list-mode
 force=0
 list=0
@@ -71,7 +85,11 @@ shift $((OPTIND -1))
 runit() {
   [ -z "$1" ] && return 1
   if [ -x $ta_home/bin/$1.sh ]; then
-    { $ta_home/bin/$1.sh 2> /dev/null; echo; } | logger -n $syslog_server -t ${tag_prefix}$(echo $1|tr '[A-Z]' '[a-z]')
+    if [ -n "$facility" ]; then
+      { $ta_home/bin/$1.sh 2> /dev/null; echo; } | logger -p $facility -t ${tag_prefix}$(echo $1|tr '[A-Z]' '[a-z]')
+    else
+      { $ta_home/bin/$1.sh 2> /dev/null; echo; } | logger -n $syslog_server -t ${tag_prefix}$(echo $1|tr '[A-Z]' '[a-z]')
+    fi
   else
     echo Could not find $1 in $ta_home/bin
     return 1

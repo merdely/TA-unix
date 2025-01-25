@@ -17,10 +17,14 @@ if [ "$KERNEL" = "Linux" ] ; then
 		assertHaveCommand apt
 		assertHaveCommand sed
 		# For this to work properly, add a line to /etc/sudoers like this:
-		# splunk ALL=(root) NOPASSWD: /usr/bin/apt update
+		#   splunk ALL=(root) NOPASSWD: /usr/bin/apt update
 		# Without the above line, 'apt list --upgradable' will not show updated packages unless the package databases were updated outside of this script
 		# sed command here replaces '/, [, ]' with ' '
-		CMD='eval date ; sudo -n apt update > /dev/null 2>&1 ; eval apt list --upgradable | sed "s/\// /; s/\[/ /; s/\]/ /"'
+		if [ $(id -u) != 0 ]; then
+			CMD='eval date ; sudo -n apt update > /dev/null 2>&1 ; eval apt list --upgradable | sed "s/\// /; s/\[/ /; s/\]/ /"'
+		else
+			CMD='eval date ; apt update > /dev/null 2>&1 ; eval apt list --upgradable | sed "s/\// /; s/\[/ /; s/\]/ /"'
+		fi
 		# shellcheck disable=SC2016
 		PARSE_0='NR==1 {DATE=$0}'
 		# shellcheck disable=SC2016
@@ -41,9 +45,13 @@ if [ "$KERNEL" = "Linux" ] ; then
 		assertHaveCommand checkupdates
 		assertHaveCommand sed
 		# For this to work properly, add a line to /etc/sudoers like this:
-		# splunk ALL=(root) NOPASSWD: /usr/bin/pacman -Syy
+		#   splunk ALL=(root) NOPASSWD: /usr/bin/pacman -Syy
 		# Without the above line, checkupdates will not show updated packages unless the package databases were updated outside of this script (similar to Debian's apt update)
-		CMD='eval date ; eval uname -m | sed -r "s/(armv7l|aarch64)/arm64/;s/x86_64/amd64/"; sudo -n pacman -Syy > /dev/null 2>&1 ; eval checkupdates'
+		if [ $(id -u) != 0 ]; then
+			CMD='eval date ; eval uname -m | sed -r "s/(armv7l|aarch64)/arm64/;s/x86_64/amd64/"; sudo -n pacman -Syy > /dev/null 2>&1 ; eval checkupdates'
+		else
+			CMD='eval date ; eval uname -m | sed -r "s/(armv7l|aarch64)/arm64/;s/x86_64/amd64/"; pacman -Syy > /dev/null 2>&1 ; eval checkupdates'
+		fi
 		# shellcheck disable=SC2016
 		PARSE_0='NR==1 {DATE=$0}'
 		PARSE_1='NR==2 {ARCH=$0}'

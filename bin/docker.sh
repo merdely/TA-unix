@@ -21,12 +21,14 @@ declare -A bw_start
 [[ $0 =~ .*_metric.sh ]] && mode=metric
 
 # Either add the splunk user to the docker group or add the following to /etc/sudoers:
-# splunk ALL=(root) NOPASSWD: /usr/bin/docker stats --no-stream --no-trunc --all
-# splunk ALL=(root) NOPASSWD: /usr/bin/docker ps --all --no-trunc --format *
-# splunk ALL=(root) NOPASSWD: /usr/bin/docker inspect -f *
+#   splunk ALL=(root) NOPASSWD: /usr/bin/docker stats --no-stream --no-trunc --all
+#   splunk ALL=(root) NOPASSWD: /usr/bin/docker ps --all --no-trunc --format *
+#   splunk ALL=(root) NOPASSWD: /usr/bin/docker inspect -f *
 
 docker_cmd=docker
-! groups | grep -q "\bdocker\b" && docker_cmd="sudo -n $docker_cmd"
+if [ $(id -u) != 0 ]; then
+  ! groups | grep -q "\bdocker\b" && docker_cmd="sudo -n $docker_cmd"
+fi
 docker_list=$($docker_cmd ps --all --no-trunc --format '{{ .ID }}')
 
 header_string="ContainerId Name CPUPct MemUsage MemTotal MemPct NetRX RXps NetTX TXps BlockRead BRps BlockWrite BWps Pids"
