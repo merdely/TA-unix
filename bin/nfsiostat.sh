@@ -5,6 +5,8 @@
 # shellcheck disable=SC1091
 . "$(dirname "$0")"/common.sh
 
+assertHaveCommand column
+
 HEADER='Mount 		  Path		  r_op/s    w_op/s    r_KB/s    w_KB/s    rpc_backlog    r_avg_RTT    w_avg_RTT    r_avg_exe    w_avg_exe'
 HEADERIZE="BEGIN {print \"$HEADER\"}"
 

@@ -1,5 +1,14 @@
 # Technical Add-on for Unix and Linux
 
+## Version 9.2.0.13 (2025-02-03)
+
+Fix alignment and fix packages for Arch Linux
+
+Changes:
+
+* Align columns with "column -t"
+* Add Arch Linux support in packages.sh
+
 ## Version 9.2.0.12 (2025-01-25)
 
 Add Version to update.sh for Darwin

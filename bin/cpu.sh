@@ -5,6 +5,8 @@
 # shellcheck disable=SC1091
 . "$(dirname "$0")"/common.sh
 
+assertHaveCommand column
+
 HEADER='CPU    pctUser    pctNice  pctSystem  pctIowait    pctIdle'
 HEADERIZE="BEGIN {print \"$HEADER\"}"
 PRINTF='{printf "%-3s  %9s  %9s  %9s  %9s  %9s\n", cpu, pctUser, pctNice, pctSystem, pctIowait, pctIdle}'
@@ -120,7 +122,7 @@ elif [ "$KERNEL" = "AIX" ] ; then
             print "";
         }'
     fi
-    $CMD | tee "$TEE_DEST" | $AWK $DEFINE "$FORMAT"
+    $CMD | tee "$TEE_DEST" | $AWK $DEFINE "$FORMAT" | column -t
     echo "Cmd = [$CMD];  | $AWK $DEFINE '$FORMAT'" >> "$TEE_DEST"
     exit
 elif [ "$KERNEL" = "Darwin" ] ; then
@@ -198,5 +200,5 @@ elif [ "$KERNEL" = "HP-UX" ] ; then
     FORMAT='{k=0; if(5<NF) k=1} {cpu=$(1+k); pctUser=$(2+k); pctNice="0"; pctSystem=$(3+k); pctIowait=$(4+k); pctIdle=$(5+k)}'
 fi
 
-$CMD | tee "$TEE_DEST" | $AWK "$HEADERIZE $FILTER $FORMAT $PRINTF"  header="$HEADER"
+$CMD | tee "$TEE_DEST" | $AWK "$HEADERIZE $FILTER $FORMAT $PRINTF"  header="$HEADER" | column -t
 echo "Cmd = [$CMD];  | $AWK '$HEADERIZE $FILTER $FORMAT $PRINTF' header=\"$HEADER\"" >> "$TEE_DEST"

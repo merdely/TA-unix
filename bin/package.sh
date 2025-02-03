@@ -5,12 +5,15 @@
 # shellcheck disable=SC1091
 . "$(dirname "$0")"/common.sh
 
+assertHaveCommand column
+
 HEADER='NAME                                                     VERSION               RELEASE               ARCH        VENDOR                          GROUP'
 HEADERIZE="BEGIN {print \"$HEADER\"}"
 PRINTF='{printf "%-55.55s  %-20.20s  %-20.20s  %-10.10s  %-30.30s  %-20s\n", name, version, release, arch, vendor, group}'
 
 CMD='echo There is no flavor-independent command...'
 if [ "$KERNEL" = "Linux" ] ; then
+	OSName=$(cat /etc/*release | grep '\bNAME=' | cut -d '=' -f2 | tr ' ' '_' | cut -d\" -f2)
 	if $DEBIAN; then
 		CMD1="eval dpkg-query -W -f='"
 		# shellcheck disable=SC2016
@@ -19,6 +22,10 @@ if [ "$KERNEL" = "Linux" ] ; then
 		CMD=$CMD1$CMD2$CMD3
 		# shellcheck disable=SC2016
 		FORMAT='{name=$1;version=$2;sub("\\.?[^0-9\\.:\\-].*$", "", version); release=$2; sub("^[0-9\\.:\\-]*","",release); if(release=="") {release="?"}; arch=$3; if (NF>3) {sub("^.*:\\/\\/", "", $4); sub("^www\\.", "", $4); sub("\\/.*$", "", $4); vendor=$4} else {vendor="?"} group="?"}'
+	elif [ "$OSName" = "Arch_Linux" ] || [ "$OSName" = "Arch_Linux_ARM" ]; then
+		CMD="eval pacman -Q"
+		# shellcheck disable=SC2016
+    FORMAT="{name=\$1;version=\$2; release=\"?\"; arch=\"$(eval uname -m | sed -r "s/(armv7l|aarch64)/arm64/;s/x86_64/amd64/")\"; vendor=\"?\"; group=\"?\"}"
 	else
 		CMD='eval rpm --query --all --queryformat "%-56{name}  %-21{version}  %-21{release}  %-11{arch}  %-31{vendor}  %-{group}\n"'
 		# shellcheck disable=SC2016
@@ -69,5 +76,5 @@ elif [ "$KERNEL" = "FreeBSD" ] ; then
 fi
 
 assertHaveCommand "$CMD"
-$CMD | tee "$TEE_DEST" | $AWK "$HEADERIZE $FILTER $FORMAT $SEPARATE_RECORDS $PRINTF"  header="$HEADER"
+$CMD | tee "$TEE_DEST" | $AWK "$HEADERIZE $FILTER $FORMAT $SEPARATE_RECORDS $PRINTF"  header="$HEADER" | column -t
 echo "Cmd = [$CMD];  | $AWK '$HEADERIZE $FILTER $FORMAT $SEPARATE_RECORDS $PRINTF' header=\"$HEADER\"" >> "$TEE_DEST"

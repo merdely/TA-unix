@@ -7,6 +7,8 @@
 # shellcheck disable=SC1091
 . "$(dirname "$0")"/common.sh
 
+assertHaveCommand column
+
 HEADER='Name    rxPackets_PS txPackets_PS rxKB_PS txKB_PS'
 HEADERIZE="BEGIN {print \"$HEADER\"}"
 PRINTF='{printf "%s    %s  %s  %s  %s\n", Name, rxPackets_PS, txPackets_PS, rxKB_PS, txKB_PS}'
@@ -92,6 +94,6 @@ elif [ "$KERNEL" = "FreeBSD" ] ; then
 fi
 
 assertHaveCommand "$CMD"
-$CMD | tee "$TEE_DEST" | $AWK "$HEADERIZE $FILTER $FORMAT $PRINTF"  header="$HEADER"
+$CMD | tee "$TEE_DEST" | $AWK "$HEADERIZE $FILTER $FORMAT $PRINTF"  header="$HEADER" | column -t
 echo "Cmd = [$CMD];  | $AWK '$HEADERIZE $FILTER $FORMAT $PRINTF' header=\"$HEADER\"" >> "$TEE_DEST"
 # jscpd:ignore-end

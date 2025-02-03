@@ -6,6 +6,8 @@
 # shellcheck disable=SC1091
 . "$(dirname "$0")"/common.sh
 
+assertHaveCommand column
+
 # jscpd:ignore-start
 if [ "$KERNEL" = "Linux" ] ; then
 	assertHaveCommand df
@@ -310,5 +312,5 @@ elif [ "$KERNEL" = "FreeBSD" ] ; then
 fi
 # jscpd:ignore-end
 
-$CMD | tee "$TEE_DEST" | $AWK "$BEGIN $HEADERIZE $FILTER_PRE $MAP_FS_TO_TYPE $FORMAT $FILTER_POST $NORMALIZE $PRINTF"  header="$HEADER"
+$CMD | tee "$TEE_DEST" | $AWK "$BEGIN $HEADERIZE $FILTER_PRE $MAP_FS_TO_TYPE $FORMAT $FILTER_POST $NORMALIZE $PRINTF"  header="$HEADER" | column -t
 echo "Cmd = [$CMD];  | $AWK '$BEGIN $HEADERIZE $FILTER_PRE $MAP_FS_TO_TYPE $FORMAT $FILTER_POST $NORMALIZE $PRINTF' header=\"$HEADER\"" >> "$TEE_DEST"

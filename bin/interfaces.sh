@@ -6,15 +6,17 @@
 # shellcheck disable=SC1091
 . "$(dirname "$0")"/common.sh
 
-HEADER='Name       MAC                inetAddr         inet6Addr                                  Collisions  RXbytes          RXerrors         TXbytes          TXerrors         Speed        Duplex'
+#HEADER='Name       MAC                inetAddr         inet6Addr                                  Collisions  RXbytes          RXerrors         TXbytes          TXerrors         Speed        Duplex'
+HEADER='Name       MAC                inetAddr         inet6Addr                                  Collisions  RXbytes          RXerrors         RXdropped          TXbytes          TXerrors         TXdropped          Speed        Duplex'
 FORMAT='{mac = length(mac) ? mac : "?"; collisions = length(collisions) ? collisions : "?"; RXbytes = length(RXbytes) ? RXbytes : "?"; RXerrors = length(RXerrors) ? RXerrors : "?"; TXbytes = length(TXbytes) ? TXbytes : "?"; TXerrors = length(TXerrors) ? TXerrors : "?"; speed = length(speed) ? speed : "?"; duplex = length(duplex) ? duplex : "?"}'
-PRINTF='END {printf "%-10s %-17s  %-15s  %-42s %-10s  %-16s %-16s %-16s %-16s %-12s %-12s\n", name, mac, IPv4, IPv6, collisions, RXbytes, RXerrors, TXbytes, TXerrors, speed, duplex}'
+#PRINTF='END {printf "%-10s %-17s  %-15s  %-42s %-10s  %-16s %-16s %-16s %-16s %-12s %-12s\n", name, mac, IPv4, IPv6, collisions, RXbytes, RXerrors, TXbytes, TXerrors, speed, duplex}'
+PRINTF='END {printf "%-10s %-17s  %-15s  %-42s %-10s  %-16s %-16s %-18s %-16s %-16s %-18s %-12s %-12s\n", name, mac, IPv4, IPv6, collisions, RXbytes, RXerrors, (RXdropped == "") ? 0 : RXdropped, TXbytes, TXerrors, (TXdropped == "") ? 0 : TXdropped, speed, duplex}'
 
 if [ "$KERNEL" = "Linux" ] ; then
 	OS_FILE=/etc/os-release
 
-	HEADER='Name       MAC                inetAddr         inet6Addr                                  Collisions  RXbytes          RXerrors         RXdropped          TXbytes          TXerrors         TXdropped          Speed        Duplex'
-	PRINTF='END {printf "%-10s %-17s  %-15s  %-42s %-10s  %-16s %-16s %-18s %-16s %-16s %-18s %-12s %-12s\n", name, mac, IPv4, IPv6, collisions, RXbytes, RXerrors, RXdropped, TXbytes, TXerrors, TXdropped, speed, duplex}'
+	#HEADER='Name       MAC                inetAddr         inet6Addr                                  Collisions  RXbytes          RXerrors         RXdropped          TXbytes          TXerrors         TXdropped          Speed        Duplex'
+	#PRINTF='END {printf "%-10s %-17s  %-15s  %-42s %-10s  %-16s %-16s %-18s %-16s %-16s %-18s %-12s %-12s\n", name, mac, IPv4, IPv6, collisions, RXbytes, RXerrors, RXdropped, TXbytes, TXerrors, TXdropped, speed, duplex}'
 	queryHaveCommand ip
 	FOUND_IP=$?
 	if [ $FOUND_IP -eq 0 ]; then
@@ -253,7 +255,7 @@ if [ "$KERNEL" = "Linux" ] ; then
 	out=$($CMD_LIST_INTERFACES)
 	lines=$(echo "$out" | wc -l)
 	if [ "$lines" -gt 0 ]; then
-		echo "$HEADER"
+		output="$HEADER\n"
 	fi
 	for iface in $out
 	do
@@ -322,12 +324,13 @@ if [ "$KERNEL" = "Linux" ] ; then
 			GET_MAC='{if ($0 ~ /ether /) { mac = $2; } else if ( NR == 1 ) { mac = $5; }}'
 		fi
 		if [ "$DUPLEX" != 'error' ] && [ "$SPEED" != 'error' ]; then
-			$CMD "$iface" | tee -a "$TEE_DEST" | awk "$BEGIN $GET_MAC $GET_ALL $FILL_BLANKS $PRINTF" name="$iface" speed="$SPEED" duplex="$DUPLEX" mac="$MAC"
+			output="$output$($CMD "$iface" | tee -a "$TEE_DEST" | awk "$BEGIN $GET_MAC $GET_ALL $FILL_BLANKS $PRINTF" name="$iface" speed="$SPEED" duplex="$DUPLEX" mac="$MAC")\n"
 	 		echo "Cmd = [$CMD $iface];     | awk '$BEGIN $GET_MAC $GET_ALL $FILL_BLANKS $PRINTF' name=$iface speed=$SPEED duplex=$DUPLEX mac=$MAC" >> "$TEE_DEST"
 		else
 			echo "ERROR: cat command failed for interface $iface" >> "$TEE_DEST"
 		fi
 	done
+	printf "$output" | column -t
 
 elif [ "$KERNEL" = "SunOS" ] ; then
 	assertHaveCommandGivenPath /usr/sbin/ifconfig
@@ -346,7 +349,7 @@ elif [ "$KERNEL" = "SunOS" ] ; then
 	out=$($CMD_LIST_INTERFACES)
 	lines=$(echo "$out" | wc -l)
 	if [ "$lines" -gt 0 ]; then
-		echo "$HEADER"
+		output="$HEADER\n"
 	fi
 	for iface in $out
 	do
@@ -358,9 +361,10 @@ elif [ "$KERNEL" = "SunOS" ] ; then
 		else
 			CMD_DESCRIBE_INTERFACE="eval kstat -n $iface ; /usr/sbin/ifconfig $iface 2>/dev/null"
 		fi
-		$CMD_DESCRIBE_INTERFACE | tee -a "$TEE_DEST" | $AWK "$GET_ALL $FORMAT $PRINTF" name="$iface" node="$NODE"
+		output="$output$($CMD_DESCRIBE_INTERFACE | tee -a "$TEE_DEST" | $AWK "$GET_ALL $FORMAT $PRINTF" name="$iface" node="$NODE")\n"
 		echo "Cmd = [$CMD_DESCRIBE_INTERFACE];     | $AWK '$GET_ALL $FORMAT $PRINTF' name=$iface node=$NODE" >> "$TEE_DEST"
 	done
+	printf "$output" | column -t
 elif [ "$KERNEL" = "AIX" ] ; then
 	assertHaveCommandGivenPath /usr/sbin/ifconfig
 	assertHaveCommandGivenPath /usr/bin/netstat
@@ -378,16 +382,17 @@ elif [ "$KERNEL" = "AIX" ] ; then
 	out=$($CMD_LIST_INTERFACES)
 	lines=$(echo "$out" | wc -l)
 	if [ "$lines" -gt 0 ]; then
-		echo "$HEADER"
+		output="$HEADER\n"
 	fi
 	for iface in $out
 	do
 		echo "Cmd = [$CMD_LIST_INTERFACES]" >> "$TEE_DEST"
 		NODE=$(uname -n)
 		CMD_DESCRIBE_INTERFACE="eval netstat -v $iface ; /usr/sbin/ifconfig $iface"
-		$CMD_DESCRIBE_INTERFACE | tee -a "$TEE_DEST" | $AWK "$GET_ALL $FORMAT $PRINTF" name="$iface" node="$NODE"
+		output="$output$($CMD_DESCRIBE_INTERFACE | tee -a "$TEE_DEST" | $AWK "$GET_ALL $FORMAT $PRINTF" name="$iface" node="$NODE")\n"
 		echo "Cmd = [$CMD_DESCRIBE_INTERFACE];     | $AWK '$GET_ALL $FORMAT $PRINTF' name=$iface node=$NODE" >> "$TEE_DEST"
 	done
+	printf "$output"
 elif [ "$KERNEL" = "Darwin" ] ; then
 	assertHaveCommand ifconfig
 	assertHaveCommand netstat
@@ -437,15 +442,16 @@ elif [ "$KERNEL" = "Darwin" ] ; then
 	out=$($CMD_LIST_INTERFACES | tee "$TEE_DEST" | awk "$CHOOSE_ACTIVE" | $UNIQUE | tee -a "$TEE_DEST")
 	lines=$(echo "$out" | wc -l)
 	if [ "$lines" -gt 0 ]; then
-		echo "$HEADER"
+		output="$HEADER\n"
 	fi
 	for iface in $out
 	do
 		echo "Cmd = [$CMD_LIST_INTERFACES];  | awk '$CHOOSE_ACTIVE' | $UNIQUE" >> "$TEE_DEST"
 		CMD_DESCRIBE_INTERFACE="eval ifconfig $iface ; netstat -b -I $iface"
-		$CMD_DESCRIBE_INTERFACE | tee -a "$TEE_DEST" | awk "$GET_ALL $PRINTF" name="$iface"
+		output="$output$($CMD_DESCRIBE_INTERFACE | tee -a "$TEE_DEST" | awk "$GET_ALL $PRINTF" name="$iface")\n"
 		echo "Cmd = [$CMD_DESCRIBE_INTERFACE];     | awk '$GET_ALL $PRINTF' name=$iface" >> "$TEE_DEST"
 	done
+	printf "$output" | column -t
 elif [ "$KERNEL" = "HP-UX" ] ; then
     assertHaveCommand ifconfig
     assertHaveCommand lanadmin
@@ -466,8 +472,7 @@ elif [ "$KERNEL" = "HP-UX" ] ; then
 	out=$($CMD | awk "$LANSCAN_AWK $GET_IP4 $GET_IP6 $GET_SPEED_DUPLEX $PRINTF $FILL_BLANKS")
 	lines=$(echo "$out" | wc -l)
 	if [ "$lines" -gt 0 ]; then
-		echo "$HEADER"
-		echo "$out"
+		printf "$HEADER\n$out\n"
 	fi
 elif [ "$KERNEL" = "OpenBSD" ] ; then
 	assertHaveCommand ifconfig
@@ -484,12 +489,13 @@ elif [ "$KERNEL" = "OpenBSD" ] ; then
 	out=$($CMD_LIST_INTERFACES | tee "$TEE_DEST" | awk "$CHOOSE_ACTIVE" | $UNIQUE | tee -a "$TEE_DEST")
 	lines=$(echo "$out" | wc -l)
 	if [ "$lines" -gt 0 ]; then
-		echo "$HEADER"
+		output="$HEADER\n"
 	fi
 	for iface in $out
 	do
-		echo "$iface       $(ifconfig $iface | awk "$GET_MAC $GET_IP END {printf \"%s  %s    %s\", mac, IPv4, IPv6}")                     $(echo $(netstat -bnI $iface -w1 | head -n4 | tail -n1) $(netstat -neI $iface -w1 | head -n4 | tail -n1) | awk "{printf \"%s           %s             %s                %s             %s\", \$9, \$1, \$6, \$2, \$8}")                auto         auto"
+		output="$output$iface $(ifconfig $iface | awk "$GET_MAC $GET_IP END {printf \"%s %s %s\", mac, IPv4, IPv6}") $(echo $(netstat -bnI $iface -w1 | head -n4 | tail -n1) $(netstat -neI $iface -w1 | head -n4 | tail -n1) | awk "{printf \"%s %s %s %s %s %s %s\", \$9, \$1, 0, \$6, \$2, \$8, 0}") auto auto\n"
 	done
+	printf "$output" | column -t
 elif [ "$KERNEL" = "FreeBSD" ] ; then
 	assertHaveCommand ifconfig
 	assertHaveCommand netstat
@@ -536,14 +542,15 @@ elif [ "$KERNEL" = "FreeBSD" ] ; then
 	out=$($CMD_LIST_INTERFACES | tee "$TEE_DEST" | awk "$CHOOSE_ACTIVE" | $UNIQUE | tee -a "$TEE_DEST")
 	lines=$(echo "$out" | wc -l)
 	if [ "$lines" -gt 0 ]; then
-		echo "$HEADER"
+		output="$HEADER\n"
 	fi
 	for iface in $out
 	do
 		echo "Cmd = [$CMD_LIST_INTERFACES];  | awk '$CHOOSE_ACTIVE' | $UNIQUE" >> "$TEE_DEST"
 		CMD_DESCRIBE_INTERFACE="eval ifconfig $iface ; netstat -b -I $iface"
-		$CMD_DESCRIBE_INTERFACE | tee -a "$TEE_DEST" | awk "$GET_ALL $PRINTF" name="$iface"
+    output="$output$($CMD_DESCRIBE_INTERFACE | tee -a "$TEE_DEST" | awk "$GET_ALL $PRINTF" name="$iface")\n"
 		echo "Cmd = [$CMD_DESCRIBE_INTERFACE];     | awk '$GET_ALL $PRINTF' name=$iface" >> "$TEE_DEST"
 	done
+	printf "$output" | column -t
 fi
 # jscpd:ignore-end

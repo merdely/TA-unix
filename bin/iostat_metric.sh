@@ -8,6 +8,8 @@
 # shellcheck disable=SC1091
 . "$(dirname "$0")"/common.sh
 
+assertHaveCommand column
+
 if [ "$KERNEL" = "Linux" ] ; then
 	CMD='iostat -xky 1 1'
 	assertHaveCommand "$CMD"
@@ -66,10 +68,10 @@ elif [ "$KERNEL" = "Darwin" ] ; then
 	FUNC2='function getAllDeltasPS(disk) {rReq_PS=getDeltaPS(disk,"Operations (Read)"); wReq_PS=getDeltaPS(disk,"Operations (Write)"); rKB_PS=getDeltaPS(disk,"Bytes (Read)")/1024; wKB_PS=getDeltaPS(disk,"Bytes (Write)")/1024; avgWaitMillis=getLatency(disk);}'
 	SCRIPT="$HEADERIZE $FILTER $FUNC1 $LATENCY $FUNC2 END {$FORMAT for (device in devices) {getAllDeltasPS(device); $PRINTF}}"
 	# shellcheck disable=SC2086
-	$CMD | tee "$TEE_DEST" | awk $DEFINE "$SCRIPT"  header="$HEADER"
+	$CMD | tee "$TEE_DEST" | awk $DEFINE "$SCRIPT"  header="$HEADER" | column -t
 	echo "Cmd = [$CMD];  | awk $DEFINE '$SCRIPT' header=\"$HEADER\"" >> "$TEE_DEST"
 	exit 0
 fi
 # shellcheck disable=SC2086
-$CMD | tee "$TEE_DEST" | $AWK $DEFINE "$FILTER $PRINTF"
+$CMD | tee "$TEE_DEST" | $AWK $DEFINE "$FILTER $PRINTF" | column -t
 echo "Cmd = [$CMD];  | $AWK $DEFINE '$FILTER'" >> "$TEE_DEST"

@@ -6,6 +6,8 @@
 # shellcheck disable=SC1091
 . "$(dirname "$0")"/common.sh
 
+assertHaveCommand column
+
 # shellcheck disable=SC2016
 FILL_DIMENSIONS='{length(IP_address) || IP_address = "?";length(OS_version) || OS_version = "?";length(OSName) || OSName = "?";length(IPv6_Address) || IPv6_Address = "?"}'
 
@@ -346,5 +348,5 @@ fi
 # jscpd:ignore-end
 
 # shellcheck disable=SC2086
-$CMD | tee "$TEE_DEST" | $AWK $DEFINE "$BEGIN $HEADERIZE $FILTER_PRE $MAP_FS_TO_TYPE $FORMAT $FILTER_POST $NORMALIZE $FILL_DIMENSIONS $PRINTF" header="$HEADER"
+$CMD | tee "$TEE_DEST" | $AWK $DEFINE "$BEGIN $HEADERIZE $FILTER_PRE $MAP_FS_TO_TYPE $FORMAT $FILTER_POST $NORMALIZE $FILL_DIMENSIONS $PRINTF" header="$HEADER" | column -t
 echo "Cmd = [$CMD];  | $AWK $DEFINE '$BEGIN $HEADERIZE $FILTER_PRE $MAP_FS_TO_TYPE $FORMAT $FILTER_POST $NORMALIZE $FILL_DIMENSIONS $PRINTF' header=\"$HEADER\"" >>"$TEE_DEST"

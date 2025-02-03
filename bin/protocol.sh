@@ -5,6 +5,8 @@
 # shellcheck disable=SC1091
 . "$(dirname "$0")"/common.sh
 
+assertHaveCommand column
+
 CMD='netstat -s'
 HEADER='  IPdropped   TCPrexmits   TCPreorder   TCPpktRecv   TCPpktSent   UDPpktLost   UDPunkPort   UDPpktRecv   UDPpktSent'
 HEADERIZE="BEGIN {print \"$HEADER\"}"
@@ -77,5 +79,5 @@ elif [ "$KERNEL" = "HP-UX" ] ; then
 fi
 
 assertHaveCommand "$CMD"
-$CMD | tee "$TEE_DEST" | $AWK "$HEADERIZE $FIGURE_SECTION $COMMON $SECTION_IP $SECTION_TCP $SECTION_UDP $PRINTF"  header="$HEADER"
+$CMD | tee "$TEE_DEST" | $AWK "$HEADERIZE $FIGURE_SECTION $COMMON $SECTION_IP $SECTION_TCP $SECTION_UDP $PRINTF"  header="$HEADER" | column -t
 echo "Cmd = [$CMD];  | $AWK '$HEADERIZE $FIGURE_SECTION $COMMON $SECTION_IP $SECTION_TCP $SECTION_UDP $PRINTF' header=\"$HEADER\"" >> "$TEE_DEST"

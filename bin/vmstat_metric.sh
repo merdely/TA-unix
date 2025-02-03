@@ -6,6 +6,8 @@
 # shellcheck disable=SC1091
 . "$(dirname "$0")"/common.sh
 
+assertHaveCommand column
+
 # hardware.sh is called in all commands to get CPU counts. The CPU count is required to determine
 # the number of threads that waited for execution time. CPU count accounts for hyperthreaded cores so
 # (load average - CPU count) gives a reasonable estimate of how many threads were waiting to execute.
@@ -206,5 +208,5 @@ elif [ "$KERNEL" = "FreeBSD" ] ; then
 	FILL_BLANKS='END {threads=pgSwapOut="?"}'
 fi
 # shellcheck disable=SC2086
-$CMD | tee "$TEE_DEST" | $AWK $DEFINE "$HEADERIZE $MESSAGE $FILL_BLANKS $FILL_DIMENSIONS $PRINTF "  header="$HEADER"
+$CMD | tee "$TEE_DEST" | $AWK $DEFINE "$HEADERIZE $MESSAGE $FILL_BLANKS $FILL_DIMENSIONS $PRINTF "  header="$HEADER" | column -t
 echo "Cmd = [$CMD];  | $AWK $DEFINE '$HEADERIZE $MESSAGE $FILL_BLANKS $FILL_DIMENSIONS $PRINTF' header=\"$HEADER\"" >> "$TEE_DEST"
