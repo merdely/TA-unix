@@ -5,68 +5,62 @@
 # shellcheck disable=SC1091
 . "$(dirname "$0")"/common.sh
 
-PRINTF='END {printf "%s %s %s %s %s %s %s %s %s\n", DATE, MACH_HW_NAME, MACH_ARCH_NAME, KERN_REL, OS_NAME, KERN_VER, OS_REL, OS_VER, DISTRO}'
+PRINTF='END {printf "%s %s %s %s %s %s %s %s %s\n", DATE, MACH_HW_NAME, MACH_ARCH_NAME, OS_REL, OS_NAME, OS_VER, KERNEL_NAME, KERNEL_VERSION, KERNEL_RELEASE}'
 
 
 if [ "$KERNEL" = "Linux" ] ; then
 	assertHaveCommand date
 	assertHaveCommand uname
-	[ -f /etc/os-release ] && . /etc/os-release
-	machine_arch=$(uname -p)
-	os_release=$(uname -r)
-	os_version=$(uname -v)
-  distro_name=Linux
-	[ -n "$NAME" ] && distro_name=$NAME
-	[ -n "$VERSION_ID" ] && os_release=$VERSION_ID
-	[ -n "$VERSION_ID" ] && os_version=$VERSION_ID
-	[ -r /etc/debian_version ] && grep -Eq "^[0-9.]+$" /etc/debian_version && os_release=$(cat /etc/debian_version)
-	[ "$BUILD_ID" = "rolling" ] && os_release=rolling
-	[ "$BUILD_ID" = "rolling" ] && os_version=rolling
-	which dpkg > /dev/null 2>&1 && machine_arch=$(dpkg --print-architecture)
-	[ "$NAME" = "Arch Linux" -o "$NAME" = "Arch Linux ARM" ] && machine_arch=$(uname -m | sed -r "s/(armv7l|aarch64)/arm64/;s/x86_64/amd64/")
-
-	CMD="eval date ; echo $distro_name ; eval uname -m ; eval uname -r ; eval uname -s ; eval uname -v ; echo $machine_arch; echo $os_release; echo $os_version"
-elif [ "$KERNEL" = "Darwin" ] ; then
-	assertHaveCommand date
-	assertHaveCommand uname
-	assertHaveCommand sw_vers
-	os_release=$(sw_vers --productVersion)
-	CMD="eval date ; echo MacOS ; eval uname -m ; eval uname -r ; eval uname -s ; eval uname -v ; eval uname -p; echo $os_release; echo $os_release"
+	VERSION=$(grep "^VERSION=" /etc/*-release | cut -d= -f2 | sed 's/^["]*//;s/["]*$//' | paste -sd " " -)
+	NAME=$(grep "^NAME=" /etc/*-release | cut -d= -f2 | sed 's/^["]*//;s/["]*$//' | paste -sd " " -)
+	VERSION_ID=$(grep "^VERSION_ID=" /etc/*-release | cut -d= -f2 | sed 's/^["]*//;s/["]*$//' | paste -sd " " -)
+	MACHINE_ARCH=$(uname -p)
+	which dpkg > /dev/null 2>&1 && MACHINE_ARCH=$(dpkg --print-architecture)
+	which pacman > /dev/null 2>&1 && MACHINE_ARCH=$(uname -m | sed -r "s/(armv7l|aarch64)/arm64/;s/x86_64/amd64/") && VERSION=rolling && VERSION_ID=rolling
+	CMD="eval date ; eval uname -m ; echo \"$VERSION\" ; echo \"$NAME\" ; echo \"$VERSION_ID\" ; echo \"$MACHINE_ARCH\" ; eval uname -s ; eval uname -v ; eval uname -r"
 elif [ "$KERNEL" = "SunOS" ] || [ "$KERNEL" = "FreeBSD" ] || [ "$KERNEL" = "OpenBSD" ] ; then
 	assertHaveCommand date
 	assertHaveCommand uname
-	CMD='eval date ; echo $KERNEL ; eval uname -m ; eval uname -r ; eval uname -s ; eval uname -v ; eval uname -p;'
+	CMD='eval date ; eval uname -m ; eval uname -r ; echo $KERNEL ; eval uname -r; eval uname -p ; eval uname -s ; eval uname -v ; eval uname -r;'
+elif [ "$KERNEL" = "Darwin" ] ; then
+  # Darwin-macos uses sw_vers for os version, name and release switch.
+	assertHaveCommand date
+	assertHaveCommand uname
+	VERSION=$(sw_vers -BuildVersion)
+	NAME=$(sw_vers -productName)
+	VERSION_ID=$(sw_vers -ProductVersion)
+	CMD="eval date ; eval uname -m ; echo \"$VERSION_ID ($VERSION)\" ; echo \"$NAME\" ; echo \"$VERSION_ID\" ; eval uname -p ; eval uname -s ; eval uname -v ; eval uname -r"
 elif [ "$KERNEL" = "HP-UX" ] ; then
 	# HP-UX lacks -p switch.
 	assertHaveCommand date
 	assertHaveCommand uname
-	CMD='eval date ; echo HP-UX ; eval uname -m ; eval uname -r ; eval uname -s ; eval uname -v'
+	CMD='eval date ; eval uname -m ; eval uname -r ; eval uname -s ; eval uname -v'
 elif [ "$KERNEL" = "AIX" ] ; then
 	# AIX uses oslevel for version and release switch.
 	assertHaveCommand date
 	assertHaveCommand uname
-	CMD='eval date ; echo AIX ; eval uname -m ; eval oslevel -r ; eval uname -s ; eval oslevel -s'
+	CMD='eval date ; eval uname -m ; eval oslevel -r ; eval uname -s ; eval oslevel ; eval uname -m ; eval uname -s ; eval uname -v; eval uname -r'
 fi
 
 # Get the date.
 # shellcheck disable=SC2016
 PARSE_0='NR==1 {DATE=$0}'
 # shellcheck disable=SC2016
-PARSE_1='NR==2 {DISTRO="distro_name=\"" $0 "\""}'
+PARSE_1='NR==2 {MACH_HW_NAME="machine_hardware_name=\"" $0 "\""}'
 # shellcheck disable=SC2016
-PARSE_2='NR==3 {MACH_HW_NAME="machine_hardware_name=\"" $0 "\""}'
+PARSE_2='NR==3 {OS_REL="os_release=\"" $0 "\""}'
 # shellcheck disable=SC2016
-PARSE_3='NR==4 {OS_REL="os_release=\"" $0 "\"";KERN_REL="kernel_release=\"" $0 "\""}'
+PARSE_3='NR==4 {OS_NAME="os_name=\"" $0 "\""}'
 # shellcheck disable=SC2016
-PARSE_4='NR==5 {OS_NAME="os_name=\"" $0 "\""}'
+PARSE_4='NR==5 {OS_VER="os_version=\"" $0 "\""}'
 # shellcheck disable=SC2016
-PARSE_5='NR==6 {OS_VER="os_version=\"" $0 "\"";KERN_VER="kernel_version=\"" $0 "\""}'
+PARSE_5='NR==6 {MACH_ARCH_NAME="machine_architecture_name=\"" $0 "\""}'
 # shellcheck disable=SC2016
-PARSE_6='NR==7 {MACH_ARCH_NAME="machine_architecture_name=\"" $0 "\""}'
+PARSE_6='NR==7 {KERNEL_NAME="kernel_name=\"" $0 "\""}'
 # shellcheck disable=SC2016
-PARSE_7='NR==8 {OS_REL="os_release=\"" $0 "\""}'
+PARSE_7='NR==8 {KERNEL_VERSION="kernel_version=\"" $0 "\""}'
 # shellcheck disable=SC2016
-PARSE_8='NR==9 {OS_VER="os_version=\"" $0 "\""}'
+PARSE_8='NR==9 {KERNEL_RELEASE="kernel_release=\"" $0 "\""}'
 
 MASSAGE="$PARSE_0 $PARSE_1 $PARSE_2 $PARSE_3 $PARSE_4 $PARSE_5 $PARSE_6 $PARSE_7 $PARSE_8"
 
