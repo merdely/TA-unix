@@ -5,22 +5,35 @@
 # shellcheck disable=SC1091
 . "$(dirname "$0")"/common.sh
 
-HEADER='USERNAME                        FROM                            LATEST'
+HEADER='USERNAME                        FROM                            LATEST                          DURATION'
 HEADERIZE="BEGIN {print \"$HEADER\"}"
-PRINTF='{printf "%-30s  %-30.30s  %-s\n", username, from, latest}'
+PRINTF='{printf "%-30s  %-30.30s  %-30.30s  %-s\n", username, from, latest, duration}'
 
 if [ "$KERNEL" = "Linux" ] ; then
 	CMD='last -iw'
 	# shellcheck disable=SC2016
 	FILTER='{if ($0 == "") exit; if ($1 ~ /reboot|shutdown/ || $1 in users) next; users[$1]=1}'
 	# shellcheck disable=SC2016
-	FORMAT='{username = $1; from = (NF==10) ? $3 : "<console>"; latest = $(NF-6) " " $(NF-5) " " $(NF-4) " " $(NF-3)}'
+  # Extracts duration values from the 10th column of the `last` command output.
+  # If the session is `still running` or `still logged in`, "N/A" is set as the default value.
+  # This approach is applied to all supported kernels in the script.
+  FORMAT='{
+    username = $1;
+    from = (NF>=10) ? $3 : "<console>";
+    latest = (NF >= 10 && ($7 == "gone" || $8 == "gone" || $9 == "gone")) ? $(NF-7) " " $(NF-6) " " $(NF-5) " " $(NF-4) : $(NF-6) " " $(NF-5) " " $(NF-4) " " $(NF-3);
+    duration = (NF >= 10 && $10 != "still" && $10 != "logged" && $10 != "running" && $10 != "in" && $10 != "" && $10 != "gone" && $10 != "no" && $10 != "logout") ? $10 : "N/A";
+  }'
 elif [ "$KERNEL" = "SunOS" ] ; then
 	CMD='last -n 999'
 	# shellcheck disable=SC2016
 	FILTER='{if ($0 == "") exit; if ($1 ~ /reboot|shutdown/ || $1 in users) next; users[$1]=1}'
 	# shellcheck disable=SC2016
-	FORMAT='{username = $1; from = (NF==10) ? $3 : "<console>"; latest = $(NF-6) " " $(NF-5) " " $(NF-4) " " $(NF-3)}'
+	FORMAT='{
+	  username = $1;
+	  from = (NF>=10) ? $3 : "<console>";
+	  latest = (NF >= 10 && ($7 == "gone" || $8 == "gone" || $9 == "gone")) ? $(NF-7) " " $(NF-6) " " $(NF-5) " " $(NF-4) : $(NF-6) " " $(NF-5) " " $(NF-4) " " $(NF-3);
+	  duration = (NF >= 10 && $10 != "still" && $10 != "logged" && $10 != "running" && $10 != "in" && $10 != "" && $10 != "gone" && $10 != "no" && $10 != "logout") ? $10 : "N/A";
+  }'
 elif [ "$KERNEL" = "AIX" ] ; then
 	failUnsupportedScript
 elif [ "$KERNEL" = "Darwin" ] ; then
@@ -28,7 +41,12 @@ elif [ "$KERNEL" = "Darwin" ] ; then
 	# shellcheck disable=SC2016
 	FILTER='{if ($0 == "") exit; if ($1 ~ /reboot|shutdown/ || $1 in users) next; users[$1]=1}'
 	# shellcheck disable=SC2016
-	FORMAT='{username = $1; from = ($0 !~ /                /) ? $3 : "<console>"; latest = $(NF-6) " " $(NF-5) " " $(NF-4) " " $(NF-3)}'
+  FORMAT='{
+    username = $1;
+    from = ($0 !~ /                /) ? $3 : "<console>";
+    latest = (NF >= 10 && ($7 == "gone" || $8 == "gone" || $9 == "gone")) ? $(NF-7) " " $(NF-6) " " $(NF-5) " " $(NF-4) : $(NF-6) " " $(NF-5) " " $(NF-4) " " $(NF-3);
+    duration = (NF >= 10 && $10 != "still" && $10 != "logged" && $10 != "running" && $10 != "in" && $10 != "" && $10 != "gone" && $10 != "no" && $10 != "logout") ? $10 : "N/A";
+  }'
 elif [ "$KERNEL" = "HP-UX" ] ; then
     CMD='lastb -Rx'
 	# shellcheck disable=SC2016
@@ -36,9 +54,16 @@ elif [ "$KERNEL" = "HP-UX" ] ; then
 	# shellcheck disable=SC2016
     FILTER='{if ($1 == "BTMPS_FILE") next; if (NF==0) next; if (NF<=6) next;}'
 elif [ "$KERNEL" = "FreeBSD" ] ; then
-	CMD='lastlogin'
+  CMD='last -w'
 	# shellcheck disable=SC2016
-	FORMAT='{username = $1; from = (NF==8) ? $3 : "<console>"; latest=$(NF-4) " " $(NF-3) " " $(NF-2) " " $(NF-1) " " $NF}'
+	FILTER='{if ($0 == "") exit; if ($1 ~ /reboot|shutdown/ || $1 in users) next; users[$1]=1}'
+	# shellcheck disable=SC2016
+  FORMAT='{
+    username = $1;
+    from = (NF>=10) ? $3 : "<console>";
+    latest = (NF >= 10 && ($7 == "gone" || $8 == "gone" || $9 == "gone")) ? $(NF-7) " " $(NF-6) " " $(NF-5) " " $(NF-4) : $(NF-6) " " $(NF-5) " " $(NF-4) " " $(NF-3);
+    duration = (NF >= 10 && $10 != "still" && $10 != "logged" && $10 != "running" && $10 != "in" && $10 != "" && $10 != "gone" && $10 != "no" && $10 != "logout") ? $10 : "N/A";
+  }'
 fi
 
 assertHaveCommand $CMD

@@ -1,10 +1,10 @@
 {
   "version": "1.0",
-  "date": "2024-10-18T12:52:23.073000921Z",
+  "date": "2025-02-04T11:38:22.666904374Z",
   "hashAlgorithm": "SHA-256",
   "app": {
     "id": 833,
-    "version": "9.2.0",
+    "version": "10.0.0",
     "files": [
       {
         "path": "LICENSES/Apache-2.0.txt",
@@ -24,15 +24,15 @@
       },
       {
         "path": "THIRDPARTY",
-        "hash": "6340a3cf0959b37d83e10ce4e12bc4ab53d2ae2729ee506451b8d554418d1ab3"
+        "hash": "e30015ede460c622a205889b17874cd7261a7903442be1750b982cde6de5ab52"
       },
       {
         "path": "VERSION",
-        "hash": "4b083d27782e80fd5bce34252adc7de9e9ab611475e170cb507e49586483025e"
+        "hash": "cda5bf0ca405341ecb098ba217bbcf8b4b2e83dc54d559b623093b211e3ee413"
       },
       {
         "path": "app.manifest",
-        "hash": "24b4bb6f47bc1472038f5c983ec91705052162da89555f52a78c9f3c830cfd82"
+        "hash": "672bddb913818d3f15a6762f41b5dd0dcef93de2c0758e0d0340ca3f6b1cf15f"
       },
       {
         "path": "appserver/static/appIcon.png",
@@ -72,11 +72,11 @@
       },
       {
         "path": "bin/cpu.sh",
-        "hash": "e34d912324ceb3f6add524722adc9057b4177015fad844a5e37634ef40cbb9c7"
+        "hash": "5d1bc8ba07595872eee78d55136c1bd419a9b63aafd1a10ded78ee3ef186782d"
       },
       {
         "path": "bin/cpu_metric.sh",
-        "hash": "2d175a98ded5f141b20fd3b3847217447b5489b4d989512d8b8679a4f2777a0b"
+        "hash": "30b3d257d73ff3e656c8f8b414cbec0afe0ac52838a7a5a2db3f1d64f74211ee"
       },
       {
         "path": "bin/df.sh",
@@ -108,7 +108,7 @@
       },
       {
         "path": "bin/lastlog.sh",
-        "hash": "8d8c0744767d9426cb98122d33eb6acd5447db4a03cfccfd5fdc014f1e15ea3e"
+        "hash": "1c52c7e734cdc91a9644c243131e6e82e301f48ff4a4c8b88e68ed69917e6233"
       },
       {
         "path": "bin/lsof.sh",
@@ -120,7 +120,7 @@
       },
       {
         "path": "bin/nfsiostat.sh",
-        "hash": "eccc2bf3701840173206ecf7603c20861b4ce106b6be795df2fa312744958107"
+        "hash": "c2f50340c82964bcf18710ed787b72354ebf83eacbcdb7b9a58e28c2299802d8"
       },
       {
         "path": "bin/openPorts.sh",
@@ -176,7 +176,7 @@
       },
       {
         "path": "bin/time.sh",
-        "hash": "5ad0ed71a9c4637046da43656aea4a614e331217fb707e9df7443aaa6036eeba"
+        "hash": "1072cf254e0aa99bfbfd25bf95ba93d5679bcbc16287d60c11a16103998ca2cd"
       },
       {
         "path": "bin/top.sh",
@@ -184,7 +184,7 @@
       },
       {
         "path": "bin/update.sh",
-        "hash": "048f6e678f873d2b856ec851c52389d9f8d5ccde0fee0ead0dcf5348cc3cb587"
+        "hash": "ebf6c54aa23d171d4204981f82a3e32125ce02a02ae592b939c7ddff375afd71"
       },
       {
         "path": "bin/uptime.sh",
@@ -196,7 +196,7 @@
       },
       {
         "path": "bin/version.sh",
-        "hash": "4d484fc3e1853d0e07d47ba9c4401266a1fbe0712a554e9eeaeb835b96d8a59f"
+        "hash": "a9e28c5ddd56a8b25da85ab7c4bb3dec939401ad210453b39209c059a9d735d2"
       },
       {
         "path": "bin/vmstat.sh",
@@ -216,7 +216,7 @@
       },
       {
         "path": "default/app.conf",
-        "hash": "451c717df6073aabd78b5ba4abb33ac71b6d61df8d46a243913b01ed9ac77040"
+        "hash": "bf761213f1ac3ce27e3391dc22a82db31f00f7afbeac4961aea849448ec60fa3"
       },
       {
         "path": "default/data/ui/nav/default.xml",
@@ -232,7 +232,7 @@
       },
       {
         "path": "default/eventtypes.conf",
-        "hash": "c52b63bf8b429e406a1488c59c1945531123bed647b08460d85ca3a6a4f8f81e"
+        "hash": "a7796bdb4f40330bf674c34d8f45a67151cd7e5bdadeaa46b7fca1c4e122d07a"
       },
       {
         "path": "default/inputs.conf",
@@ -244,7 +244,7 @@
       },
       {
         "path": "default/props.conf",
-        "hash": "8742759e63baf3dc737adecec95fb7370741cb5f2268064593cb2e5a1ba8b260"
+        "hash": "194b6dbb7b228c2d0e124f64a5ee8a137a7fdbb56681b78418f513821f09e0c1"
       },
       {
         "path": "default/restmap.conf",
@@ -252,11 +252,11 @@
       },
       {
         "path": "default/tags.conf",
-        "hash": "ad29e489018a892f8d50731e32efa48a01dcdb438096d443f7b6e068cfd1ca15"
+        "hash": "f055d2f3fd959b0af6c48b0494dadc36009b7a90fb5d1a83e0e6784c898d8e05"
       },
       {
         "path": "default/transforms.conf",
-        "hash": "d13792dde1aa85d9e864782787948d6f10b888e4a689d6668de3cc604e2ad1ab"
+        "hash": "7d57050a65dd01efba192a5e74bbf74d9bfb54a240608ac265e57423c000b5ff"
       },
       {
         "path": "default/web.conf",
@@ -317,10 +317,10 @@
       "platform": "splunk",
       "product": "enterprise",
       "versions": [
-        "9.0",
         "9.1",
         "9.2",
-        "9.3"
+        "9.3",
+        "9.4"
       ],
       "architectures": [
         "x86_64"
@@ -338,10 +338,10 @@
       "platform": "splunk",
       "product": "cloud",
       "versions": [
-        "9.0",
         "9.1",
         "9.2",
-        "9.3"
+        "9.3",
+        "9.4"
       ],
       "architectures": [
         "x86_64"

@@ -60,8 +60,29 @@ CMD1='date'
 assertHaveCommand $CMD1
 assertHaveCommand "$CMD2"
 
-$CMD1 | tee -a "$TEE_DEST"
 echo "Cmd1 = [$CMD1]" >> "$TEE_DEST"
+$CMD1 | tee -a "$TEE_DEST"
 
-$CMD2 | tee -a "$TEE_DEST"
 echo "Cmd2 = [$CMD2]" >> "$TEE_DEST"
+if [ "$KERNEL" = "Darwin" ] && [ $FOUND_SNTP -eq 0 ] ; then
+  TMP_ERROR_FILTER_FILE=$SPLUNK_HOME/var/run/splunk/unix_time_error_tmpfile
+  OUTPUT=$($CMD2 2>$TMP_ERROR_FILTER_FILE)
+
+  if grep -q "Timeout" < $TMP_ERROR_FILTER_FILE; then
+    LAST_LINE=$(echo "$OUTPUT" | tail -n 1)
+    if [[ "$LAST_LINE" == *"$SERVER"* ]]; then
+      echo "$LAST_LINE" | tee -a "$TEE_DEST"
+    fi
+    cat $TMP_ERROR_FILTER_FILE >> $TEE_DEST
+    echo "$OUTPUT" >> "$TEE_DEST"
+    rm $TMP_ERROR_FILTER_FILE 2>/dev/null
+  elif grep -vq "Timeout" < $TMP_ERROR_FILTER_FILE; then
+    cat $TMP_ERROR_FILTER_FILE >&2
+    echo "$OUTPUT" >> "$TEE_DEST"
+    rm $TMP_ERROR_FILTER_FILE 2>/dev/null
+  else
+    echo "$OUTPUT" | tee -a "$TEE_DEST"
+  fi
+else
+	$CMD2 | tee -a "$TEE_DEST"
+fi

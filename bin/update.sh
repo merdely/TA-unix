@@ -92,12 +92,12 @@ elif [ "$KERNEL" = "Darwin" ] ; then
 	# shellcheck disable=SC2016
 	PARSE_1='NR>1 && PROCESS==1 && $0 !~ /^[[:blank:]]*$/ {
 		if ( $0 ~ /^[[:blank:]]*\*/ ) {
-			PACKAGE="package=\"" $2 "\""
+			PACKAGE="package=\"" substr($0, index($0,$3)) "\""
 			RECOMMENDED=""
 			RESTART=""
 			TOTAL=TOTAL+1
 		} else {
-			if ( $0 ~ /recommended/ ) { RECOMMENDED="is_recommended=\"true\"" }
+			if ( $0 ~ /Recommended/ ) { RECOMMENDED="is_recommended=\"true\"" }
 			if ( $0 ~ /restart/ ) { RESTART="restart_required=\"true\"" }
 			printf "%s %s %s %s\n", DATE, PACKAGE, RECOMMENDED, RESTART
 		}
