@@ -1,5 +1,18 @@
 # Technical Add-on for Unix and Linux
 
+## Version 10.0.0.1 (2025-02-19)
+
+Fix report CPU_TYPE in hardware.sh for RPIs
+
+Changes:
+
+* For CPU_TYPE in hardware.sh, report something if /proc/cpuinfo does not
+  contain processor model information
+
+## Version 10.0.0.0 (2025-02-05)
+
+Merge in Splunk Add-On for Unix and Linux version 10.0.0
+
 ## Version 9.2.0.13 (2025-02-03)
 
 Fix alignment and fix packages for Arch Linux
