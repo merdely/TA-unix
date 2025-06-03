@@ -120,9 +120,46 @@ elif [ "$KERNEL" = "AIX" ] ; then
 	assertHaveCommandGivenPath /usr/bin/df
 	CMD='eval /usr/sysv/bin/df -n ; /usr/bin/df -kP -F %u %f %z %l %n %p %m'
 
-	# Normalize Size, Used and Avail columns
+	#Maps fsType
 	# shellcheck disable=SC2016
-	NORMALIZE='
+	MAP_FS_TO_TYPE='/: / {
+        key = "";
+        value = "";
+        foundColon = 0;
+
+        for (i = 1; i <= NF; i++) {
+            if (!foundColon) {
+                if ($i ~ /:$/) {
+                    clean = $i;
+                    sub(/:$/, "", clean);
+                    if (clean != "") {
+                        key = (key ? key " " : "") clean;
+                    }
+                    foundColon = 1;
+                } else {
+                    if ($i != "") {
+                        key = (key ? key " " : "") $i;
+                    }
+                }
+            } else if ($i ~ /[a-zA-Z0-9]/ && value == "") {
+                value = $i;
+            }
+        }
+
+        gsub(/ /, "&nbsp;", key);
+
+        fsTypes[key] = value;
+    }'
+
+
+	# shellcheck disable=SC2016
+	BEGIN='BEGIN {
+        OFS = "\t";
+        printedHeader = 0;
+    }'
+	# Append Type and Inode headers to the main header and print respective fields from values stored in MAP_FS_TO_TYPE variables
+	# shellcheck disable=SC2016
+	PRINTF='
 	function fromKB(KB) {
 		MB = KB/1024;
 		if (MB<1024) return MB "M";
@@ -131,68 +168,80 @@ elif [ "$KERNEL" = "AIX" ] ; then
 		TB = GB/1024; return TB "T"
 	}
 	{
-		if($0 ~ /^Filesystem.*/){
-			for(i=1;i<=NF;i++){
-				if($i=="1024-blocks") {sizeCol=i; sizeFlag=1;}
-				if($i=="Used") {usedCol=i; usedFlag=1;}
-				if($i=="Available") {availCol=i; availFlag=1;}
-			}
-		}
-		if(!($0 ~ /^Filesystem.*/) && sizeFlag==1)
-			$sizeCol=fromKB($sizeCol);
-		if(!($0 ~ /^Filesystem.*/) && usedFlag==1)
-			$usedCol=fromKB($usedCol);
-		if(!($0 ~ /^Filesystem.*/) && availFlag==1)
-			$availCol=fromKB($availCol);
-	}'
+        if ($0 ~ /^Filesystem.*/) {
+            if (!printedHeader) {
+                sub("%iused", "IUsePct", $0);
+                header_field_count = NF;
 
-	#Maps fsType
-	# shellcheck disable=SC2016
-	MAP_FS_TO_TYPE='/: / {
-		for(i=1;i<=NF;i++){
-			if($i ~ /^\/.*/)
-				keyCol=i;
-			else if($i ~ /[a-zA-Z0-9]/)
-				valueCol=i;
-		}
-		if($keyCol ~ /^\/.*:/)
-			fsTypes[substr($keyCol,1,length($keyCol)-1)] = $valueCol;
-		else
-			fsTypes[$keyCol]=$valueCol;
-	}'
+                for (i = 1; i <= NF; i++) {
+                    if ($i == "iused") iusedCol = i;
+                    if ($i == "ifree") ifreeCol = i;
+                    if ($i == "Mounted" && $(i + 1) == "on") {
+                        mountedCol = i;
+                        sub("Mounted on", "MountedOn", $0);
+                    }
+                }
 
-	# shellcheck disable=SC2016
-	BEGIN='BEGIN { OFS = "\t" }'
-	# Append Type and Inode headers to the main header and print respective fields from values stored in MAP_FS_TO_TYPE variables
-	# shellcheck disable=SC2016
-	PRINTF='
-	{
-		if($0 ~ /^Filesystem.*/){
-			sub("%Iused","IUsePct",$0);
-			for(i=1;i<=NF;i++){
-				if($i=="Iused") iusedCol=i;
-				if($i=="Ifree") ifreeCol=i;
+                $(NF + 1) = "Type";
+                $(NF + 1) = "INodes";
+                printf "%-50s %-8s %-8s %-8s %-10s %-8s %-8s %-7s %-25s %-10s %-8s\n",
+                    "Filesystem", "Size", "Used", "Avail", "Capacity",
+                    "iused", "ifree", "IUsePct","MountedOn", "Type", "INodes";
+                printedHeader = 1;
+            }
+            next;
+        }
 
-				if($i=="Mounted" && $(i+1)=="on"){
-					mountedCol=i;
-					sub("Mounted on","MountedOn",$0);
-				}
-			}
-			$(NF+1)="Type";
-			$(NF+1)="INodes";
-			print $0;
-		}
-	}
-	{
-		for(i=1;i<=NF;i++)
-		{
-			if($i ~ /^\/\S*/ && i==mountedCol && !(fsTypes[$mountedCol]~/(devfs|ctfs|proc|mntfs|objfs|lofs|fd|tmpfs)/) && !($0 ~ /.*\/proc.*/)){
-				$(NF+1)=fsTypes[$mountedCol];
-				$(NF+1)=$iusedCol+$ifreeCol;
-				print $0;
-			}
-		}
-	}'
+        if (NF >= 8 && $0 !~ /\(.*\)/ && $0 !~ /^.* on \/.* \(/) {
+            found = 0
+            for (i = 1; i <= NF - 6; i++) {
+                cond =  ($(i)     ~ /^[0-9.]+[KMGTPBi]*$/ || $(i)     == "-") &&
+                        ($(i+1)   ~ /^[0-9.]+[KMGTPBi]*$/ || $(i+1)   == "-") &&
+                        ($(i+2)   ~ /^[0-9.]+[KMGTPBi]*$/ || $(i+2)   == "-") &&
+                        ($(i+3)   ~ /^[0-9]+%$/          || $(i+3)   == "-") &&
+                        ($(i+4)   ~ /^[0-9]+(\.[0-9]+)?[kMGTPBi]?$/ || $(i+4) == "-") &&
+                        ($(i+5)   ~ /^[0-9]+(\.[0-9]+)?[kMGTPBi]?$/ || $(i+5) == "-") &&
+                        ($(i+6)   ~ /^[0-9]+%$/          || $(i+6)   == "-")
+                if (cond) {
+                    start = i
+                    found = 1
+                    break
+                }
+            }
+
+            if (!found) {
+                next
+            }
+
+            fs = $1
+            for (j = 2; j < start; j++) {
+				print($j)
+                fs = fs "&nbsp;" $j
+            }
+            gsub("^/dev/", "", fs);
+            gsub("s[0-9]+$", "", fs);
+
+            size     = fromKB($(start))
+            used     = fromKB($(start + 1))
+            avail    = fromKB($(start + 2))
+            capacity = $(start + 3)
+            iused    = $(start + 4)
+            ifree    = $(start + 5)
+            iusepct  = $(start + 6)
+
+            mounted = $(start + 7)
+            for (k = start + 8; k <= NF; k++) {
+                mounted = mounted "&nbsp;" $k
+            }
+
+            fstype = (mounted in fsTypes) ? fsTypes[mounted] : "-";
+            inodes = iused + ifree;
+
+            printf "%-50s %-8s %-8s %-8s %-10s %-8s %-8s %-7s %-25s %-10s %-8s\n",
+            fs, size, used, avail, capacity,
+            iused, ifree, iusepct, mounted, fstype, inodes;
+        }
+    }'
 
 elif [ "$KERNEL" = "HP-UX" ] ; then
     assertHaveCommand df
@@ -215,24 +264,115 @@ elif [ "$KERNEL" = "Darwin" ] ; then
 	assertHaveCommand df
 	CMD='eval mount -t nocddafs,autofs,devfs,fdesc,nfs; df -h -T nocddafs,autofs,devfs,fdesc,nfs'
 	# shellcheck disable=SC2016
-	BEGIN='BEGIN { OFS = "\t" }'
+    BEGIN='BEGIN {
+        OFS = "\t";
+        printedHeader = 0;
+    }'
 	#Maps fsType
 	# shellcheck disable=SC2016
-	MAP_FS_TO_TYPE='/ on / {
-		for (i = 1; i <= NF; i++) {
-			if ($i == "on" && $(i + 1) ~ /^\/.*/)
-				key=$(i+1);
-			if($i ~ /^\(/)
-				value = substr($i, 2, length($i) - 2);
-		}
-		fsTypes[key] = value;
-	}'
-	PRINTF='/^Filesystem/ {
-		printf "Filesystem\tType\tSize\tUsed\tAvail\tUse%%\tInodes\tIUsed\tIFree\tIUse%%\tMountedOn\n";
-	}
-	$0 !~ /^Filesystem/ && $0 !~ / on / {
-		printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", $1, fsTypes[$NF], $2, $3, $4, $5, $6+$7, $6, $7, $8, $9;
-	}'
+    MAP_FS_TO_TYPE='/ on / {
+        key = "";
+        value = "";
+
+        for (i = 1; i <= NF; i++) {
+            if ($i == "on") {
+                # Start capturing key from the next field
+                j = i + 1;
+                while (j <= NF && $(j) !~ /^\(/) {
+                    key = (key == "") ? $(j) : key " " $(j);
+                    j++;
+                }
+            }
+
+            if ($i ~ /^\(/) {
+                value = substr($i, 2);  # Remove starting (
+                # Optionally remove trailing comma/parenthesis if needed
+                if (substr(value, length(value), 1) == "," || substr(value, length(value), 1) == ")") {
+                    value = substr(value, 1, length(value)-1);
+                }
+            }
+        }
+
+        gsub(/ /, "&nbsp;", key);  # Replace spaces with &nbsp;
+        fsTypes[key] = value;
+    }'
+	# Append Type and Inode headers to the main header and print respective fields from values stored in MAP_FS_TO_TYPE variables
+	# shellcheck disable=SC2016
+    PRINTF='{
+        if ($0 ~ /^Filesystem.*/) {
+            if (!printedHeader) {
+                sub("%iused", "IUsePct", $0);
+                header_field_count = NF;
+
+                for (i = 1; i <= NF; i++) {
+                    if ($i == "iused") iusedCol = i;
+                    if ($i == "ifree") ifreeCol = i;
+                    if ($i == "Mounted" && $(i + 1) == "on") {
+                        mountedCol = i;
+                        sub("Mounted on", "MountedOn", $0);
+                    }
+                }
+
+                $(NF + 1) = "Type";
+                $(NF + 1) = "INodes";
+                printf "%-50s %-8s %-8s %-8s %-10s %-8s %-8s %-7s %-25s %-10s %-8s\n",
+                    "Filesystem", "Size", "Used", "Avail", "Capacity",
+                    "iused", "ifree", "IUsePct","MountedOn", "Type", "INodes";
+                printedHeader = 1;
+            }
+            next;
+        }
+
+        if (NF >= 8 && $0 !~ /\(.*\)/ && $0 !~ /^.* on \/.* \(/) {
+            found = 0
+            for (i = 1; i <= NF - 6; i++) {
+                cond =  ($(i)     ~ /^[0-9.]+[KMGTPBi]*$/ || $(i)     == "-") &&
+                        ($(i+1)   ~ /^[0-9.]+[KMGTPBi]*$/ || $(i+1)   == "-") &&
+                        ($(i+2)   ~ /^[0-9.]+[KMGTPBi]*$/ || $(i+2)   == "-") &&
+                        ($(i+3)   ~ /^[0-9]+%$/          || $(i+3)   == "-") &&
+                        ($(i+4)   ~ /^[0-9]+(\.[0-9]+)?[kMGTPBi]?$/ || $(i+4) == "-") &&
+                        ($(i+5)   ~ /^[0-9]+(\.[0-9]+)?[kMGTPBi]?$/ || $(i+5) == "-") &&
+                        ($(i+6)   ~ /^[0-9]+%$/          || $(i+6)   == "-")
+                if (cond) {
+                    start = i
+                    found = 1
+                    break
+                }
+            }
+
+            if (!found) {
+                next
+            }
+
+            fs = $1
+            for (j = 2; j < start; j++) {
+                fs = fs "&nbsp;" $j
+            }
+            gsub("^/dev/", "", fs);
+            gsub("s[0-9]+$", "", fs);
+
+            size     = $(start)
+            used     = $(start + 1)
+            avail    = $(start + 2)
+            capacity = $(start + 3)
+            iused    = $(start + 4)
+            ifree    = $(start + 5)
+            iusepct  = $(start + 6)
+
+            mounted = $(start + 7)
+            for (k = start + 8; k <= NF; k++) {
+                mounted = mounted "&nbsp;" $k
+            }
+
+            fstype = (mounted in fsTypes) ? fsTypes[mounted] : "-";
+            inodes = iused + ifree;
+
+            printf "%-50s %-8s %-8s %-8s %-10s %-8s %-8s %-7s %-25s %-10s %-8s\n",
+            fs, size, used, avail, capacity,
+            iused, ifree, iusepct, mounted, fstype, inodes;
+        }
+    }'
+
 
 elif [ "$KERNEL" = "OpenBSD" ] ; then
 	assertHaveCommand mount

@@ -10,17 +10,17 @@
 assertHaveCommand column
 
 if [ "$KERNEL" = "Linux" ] ; then
-	CMD='iostat -xky 1 1'
+	CMD='iostat -xky 60 1'
 	assertHaveCommand "$CMD"
 	# considers the device, r/s and w/s columns and returns output of the first interval
 	FILTER='/Device/ && /r\/s/ && /w\/s/ {f=1;}f'
 elif [ "$KERNEL" = "SunOS" ] ; then
-	CMD='iostat -xn 1 2'
+	CMD='iostat -xn 60 2'
 	assertHaveCommand "$CMD"
 	# considers the device, r/s and w/s columns and returns output of the second interval
 	FILTER='/device/ && /r\/s/ && /w\/s/ {f++;} f==2'
 elif [ "$KERNEL" = "AIX" ] ; then
-	CMD='iostat  1 2'
+	CMD='iostat  60 2'
 	assertHaveCommand "$CMD"
 	# considers the disks, kb_read and kb_wrtn columns and returns output of the second interval
 	FILTER='/^cd/ {next} /Disks/ && /Kb_read/ && /Kb_wrtn/ {f++;} f==2'
@@ -31,7 +31,7 @@ elif [ "$KERNEL" = "OpenBSD" ] ; then
 	HEADERIZE="BEGIN {print \"$HEADER\"}"
 	FILTER=$HEADERIZE'/^[^ \t]/ && !/^(DEVICE|Totals)/{printf "%-7s %.2f  %.2f  %d    %d\n", $1, $2/1024, $3/1024, $4, $5}'
 elif [ "$KERNEL" = "FreeBSD" ] ; then
-	CMD='iostat -x -c 2'
+	CMD='iostat -x -c 2 -w 60'
 	assertHaveCommand "$CMD"
 	# considers the device, r/s and w/s columns and returns output of the second interval
 	FILTER='/device/ && /r\/s/ && /w\/s/ {f++;} f==2'

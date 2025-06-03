@@ -1,5 +1,13 @@
 # Technical Add-on for Unix and Linux
 
+## Version 10.0.0.2 (
+
+Minor fixes
+
+Changes:
+
+* Make RPI CPU_TYPE not have trailing comma
+
 ## Version 10.0.0.1 (2025-02-19)
 
 Fix report CPU_TYPE in hardware.sh for RPIs

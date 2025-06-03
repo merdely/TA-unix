@@ -22,6 +22,11 @@ if [ "$KERNEL" = "Linux" ] ; then
 	assertHaveCommand ps
 	assertHaveCommand vmstat
 	assertHaveCommand sar
+	PAGE_SIZE=$(getconf PAGE_SIZE)
+	HEADERIZE="BEGIN {
+			print \"$HEADER\"
+			pageSize = $PAGE_SIZE
+			}"
 	# shellcheck disable=SC2016
 	CMD='eval uptime ; ps -e | wc -l ; ps -eT | wc -l ; vmstat -s ; `dirname $0`/hardware.sh; sar -B 1 2; sar -I SUM 1 2'
 	# shellcheck disable=SC2016
@@ -29,7 +34,7 @@ if [ "$KERNEL" = "Linux" ] ; then
 	# shellcheck disable=SC2016
 	PARSE_1='/total memory$/ {memTotalMB=$1/1024} /free memory$/ {memFreeMB+=$1/1024} /buffer memory$/ {memFreeMB+=$1/1024} /swap cache$/ {memFreeMB+=$1/1024}'
 	# shellcheck disable=SC2016
-	PARSE_2='/(K|pages) paged out$/ {pgPageOut=$1} /used swap$/ {swapUsed=$1} /free swap$/ {swapFree=$1} /pages swapped out$/ {pgSwapOut=$1}'
+	PARSE_2='/pages paged out$/ {pgPageOut=$1} /K paged out$/ {pgPageOut=int($1*1024/pageSize)} /used swap$/ {swapUsed=$1} /free swap$/ {swapFree=$1} /pages swapped out$/ {pgSwapOut=$1}'
 	# shellcheck disable=SC2016
 	PARSE_3='/interrupts$/ {interrupts=$1} /CPU context switches$/ {cSwitches=$1} /forks$/ {forks=$1}'
 	# shellcheck disable=SC2016
@@ -67,9 +72,9 @@ elif [ "$KERNEL" = "SunOS" ] ; then
 	# Sample output: http://opensolarisforum.org/man/man1/sar.html
 	if [ "$SOLARIS_10" = "true" ] || [ "$SOLARIS_11" = "true" ] ; then
 		# shellcheck disable=SC2016
-		PARSE_6='($1 ~ "atch*") {nr[NR+3]} NR in nr {pgPageIn_PS=$3;}'
+		PARSE_6='($1 ~ "atch*") {nr[NR+10]} NR in nr {pgPageIn_PS=$4;}'
 		# shellcheck disable=SC2016
-		PARSE_7='($3 ~ "ppgout*") {nr2[NR+3]} NR in nr2 {pgPageOut_PS=$3}'
+		PARSE_7='($3 ~ "ppgout*") {nr2[NR+10]} NR in nr2 {pgPageOut_PS=$3}'
 	else
 		# shellcheck disable=SC2016
 		PARSE_6='($3 ~ "atch*") {nr[NR+3]} NR in nr {pgPageIn_PS=$5}'

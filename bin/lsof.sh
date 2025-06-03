@@ -21,7 +21,8 @@ if [[ "$KERNEL" = "Linux" ]] || [[ "$KERNEL" = "HP-UX" ]] || [[ "$KERNEL" = "Dar
 		# shellcheck disable=SC2016
 		FILTER='/KQUEUE|PIPE|PSXSEM/ {next}'
 	elif [ "$KERNEL" = "FreeBSD" ] ; then
-		if [[ $KERNEL_RELEASE =~ 11.* ]] || [[ $KERNEL_RELEASE =~ 12.* ]] || [[ $KERNEL_RELEASE =~ 13.* ]]; then
+        major=${KERNEL_RELEASE%%.*}
+        if ((major >= 13)); then
 			# empty condition to allow the execution of script as is
 			echo > /dev/null
 		else

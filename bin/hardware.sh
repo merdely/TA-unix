@@ -17,7 +17,7 @@ if [ "$KERNEL" = "Linux" ] ; then
 	CPU_TYPE=$(awk -F: '/model name/ {print $2; exit}' /proc/cpuinfo   2>>"$TEE_DEST")
 	CPU_CACHE=$(awk -F: '/cache size/ {print $2; exit}' /proc/cpuinfo  2>>"$TEE_DEST")
 	CPU_COUNT=$(grep -c processor /proc/cpuinfo                        2>>"$TEE_DEST")
-	[ -z "$CPU_TYPE" ] && [ -r /proc/device-tree/compatible ] && CPU_TYPE=$(cat /proc/device-tree/compatible | tr '\0' ',')
+	[ -z "$CPU_TYPE" ] && [ -r /proc/device-tree/compatible ] && CPU_TYPE=$(cat /proc/device-tree/compatible | sed 's/\0/,/g;s/,$//')
 	# HDs
 	# shellcheck disable=SC2010
 	for deviceBasename in $(ls /sys/block | grep -E -v '^(dm|md|ram|sr|loop)')

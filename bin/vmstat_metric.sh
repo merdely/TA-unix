@@ -26,16 +26,16 @@ if [ "$KERNEL" = "Linux" ] ; then
 	# shellcheck disable=SC2016
 	CMD='eval uptime ; ps -e | wc -l ; ps -eT | wc -l ; vmstat -s ; `dirname $0`/hardware.sh; sar -B 1 2; sar -I SUM 1 2'
 	if [ ! -f "/etc/os-release" ] ; then
-        DEFINE="-v OSName=$(cat /etc/*release | head -n 1| awk -F" release " '{print $1}'| tr ' ' '_') -v OS_version=$(cat /etc/*release | head -n 1| awk -F" release " '{print $2}' | cut -d\. -f1) -v IP_address=$(ip -4 route show default | awk '{print $9}')"
+        DEFINE="-v OSName=$(cat /etc/*release | head -n 1| awk -F" release " '{print $1}'| tr ' ' '_') -v OS_version=$(cat /etc/*release | head -n 1| awk -F" release " '{print $2}' | cut -d\. -f1) -v IP_address=$(hostname -I | cut -d\  -f1) -v PAGE_SIZE=$(getconf PAGE_SIZE)"
     else
-        DEFINE="-v OSName=$(cat /etc/*release | grep '\bNAME=' | cut -d '=' -f2 | tr ' ' '_' | cut -d\" -f2) -v OS_version=$(cat /etc/*release | grep -E '\b(VERSION|BUILD)_ID=' | cut -d '=' -f2 | cut -d\" -f2) -v IP_address=$(ip -4 route show default | awk '{print $9}')"
+        DEFINE="-v OSName=$(cat /etc/*release | grep '\bNAME=' | cut -d '=' -f2 | tr ' ' '_' | cut -d\" -f2) -v OS_version=$(cat /etc/*release | grep '\bVERSION_ID=' | cut -d '=' -f2 | cut -d\" -f2) -v IP_address=$(hostname -I | cut -d\  -f1) -v PAGE_SIZE=$(getconf PAGE_SIZE)"
     fi
 	# shellcheck disable=SC2016
 	PARSE_0='NR==1 {loadAvg1mi=0+$(NF-2)} NR==2 {processes=$1} NR==3 {threads=$1}'
 	# shellcheck disable=SC2016
 	PARSE_1='/total memory$/ {memTotalMB=$1/1024} /free memory$/ {memFreeMB+=$1/1024} /buffer memory$/ {memFreeMB+=$1/1024} /swap cache$/ {memFreeMB+=$1/1024}'
 	# shellcheck disable=SC2016
-	PARSE_2='/(K|pages) paged out$/ {pgPageOut=$1} /used swap$/ {swapUsed=$1} /free swap$/ {swapFree=$1} /pages swapped out$/ {pgSwapOut=$1}'
+	PARSE_2='/pages paged out$/ {pgPageOut=$1} /K paged out$/ {pgPageOut=int($1*1024/PAGE_SIZE)} /used swap$/ {swapUsed=$1} /free swap$/ {swapFree=$1} /pages swapped out$/ {pgSwapOut=$1}'
 	# shellcheck disable=SC2016
 	PARSE_3='/interrupts$/ {interrupts=$1} /CPU context switches$/ {cSwitches=$1} /forks$/ {forks=$1}'
 	# shellcheck disable=SC2016
@@ -73,10 +73,10 @@ elif [ "$KERNEL" = "SunOS" ] ; then
 	PARSE_5='/^CPU_COUNT/ {cpuCount=$2}'
 	# Sample output: http://opensolarisforum.org/man/man1/sar.html
 	if [ "$SOLARIS_10" = "true" ] || [ "$SOLARIS_11" = "true" ] ; then
-		# shellcheck disable=SC2016
-		PARSE_6='($1 ~ "atch*") {nr[NR+3]} NR in nr {pgPageIn_PS=$3;}'
-		# shellcheck disable=SC2016
-		PARSE_7='($3 ~ "ppgout*") {nr2[NR+3]} NR in nr2 {pgPageOut_PS=$3}'
+        # shellcheck disable=SC2016
+        PARSE_6='($1 ~ "atch*") {nr[NR+10]} NR in nr {pgPageIn_PS=$4;}'
+        # shellcheck disable=SC2016
+        PARSE_7='($3 ~ "ppgout*") {nr2[NR+10]} NR in nr2 {pgPageOut_PS=$3}'
 	else
 		# shellcheck disable=SC2016
 		PARSE_6='($3 ~ "atch*") {nr[NR+3]} NR in nr {pgPageIn_PS=$5}'

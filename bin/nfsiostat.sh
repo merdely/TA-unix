@@ -50,7 +50,7 @@ if [ "$KERNEL" = "Linux" ] ; then
     then
         # shellcheck disable=SC2016
         OS_RELEASE=$(awk -F= '/^ID=/ {gsub(/"/, "", $2); id=$2} /^VERSION_ID=/ {gsub(/"/, "", $2); ver=$2} END {print id ":" ver}' "$OS_FILE")
-        if [ "$OS_RELEASE" = "ubuntu:18.04" ] || [ "$OS_RELEASE" = "ubuntu:20.04" ] || [ "$OS_RELEASE" = "ubuntu:22.04" ] || [ "$OS_RELEASE" = "rocky:9.5" ] || [ "$OS_RELEASE" = "almalinux:9.5" ] || [ "$OS_RELEASE" = "ol:8.9" ] ; then # Ubuntu 18.04, 20.04 and 22.04 # Rocky or AlmaLinux 9.5 # Oracle Linux 8.9
+        if [ "$OS_RELEASE" = "ubuntu:18.04" ] || [ "$OS_RELEASE" = "ubuntu:20.04" ] || [ "$OS_RELEASE" = "ubuntu:22.04" ] || [ "$OS_RELEASE" = "ubuntu:24.04" ] || [ "$OS_RELEASE" = "rocky:9.5" ] || [ "$OS_RELEASE" = "almalinux:9.5" ] || [ "$OS_RELEASE" = "ol:8.9" ] ; then # Ubuntu 18.04, 20.04 and 22.04 # Rocky or AlmaLinux 9.5 # Oracle Linux 8.9
             # shellcheck disable=SC2016
             FORMAT='{
                 if (NR%10==2){

@@ -6,15 +6,18 @@
 . "$(dirname "$0")"/common.sh
 
 # shellcheck disable=SC2166
-if [ "$KERNEL" = "Linux" -o "$KERNEL" = "Darwin" -o "$KERNEL" = "FreeBSD" -o "$KERNEL" = "OpenBSD" ] ; then
+if [ "$KERNEL" = "Linux" ] ; then
     assertHaveCommand ps
-    CMD='ps auxww'
+    CMD='ps -wweo user,pid,%cpu,%mem,vsz,rss,tname,stat,start_time,bsdtime,etime,command'
 elif [ "$KERNEL" = "AIX" ] ; then
     assertHaveCommandGivenPath /usr/sysv/bin/ps
     CMD='/usr/sysv/bin/ps -eo user,pid,psr,pcpu,time,pmem,rss,vsz,tty,s,etime,args'
 elif [ "$KERNEL" = "SunOS" ] ; then
     assertHaveCommandGivenPath /usr/bin/ps
     CMD='/usr/bin/ps -eo user,pid,psr,pcpu,time,pmem,rss,vsz,tty,s,etime,args'
+elif [ "$KERNEL" = "Darwin" ] ; then
+    assertHaveCommand ps
+    CMD='ps axo user,pid,%cpu,cputime,%mem,rss,vsz,tt,state,start,etime,command'
 elif [ "$KERNEL" = "HP-UX" ] ; then
     HEADER='USER               PID   PSR   pctCPU       CPUTIME  pctMEM     RSZ_KB     VSZ_KB   TTY      S       ELAPSED  COMMAND             ARGS'
     # shellcheck disable=SC2016
@@ -35,6 +38,9 @@ elif [ "$KERNEL" = "HP-UX" ] ; then
     $CMD | tee "$TEE_DEST" | $AWK "$HEADERIZE $FORMAT $PRINTF"  header="$HEADER"
     echo "Cmd = [$CMD];  | $AWK '$HEADERIZE $FORMAT $PRINTF' header=\"$HEADER\"" >> "$TEE_DEST"
     exit
+elif [ "$KERNEL" = "FreeBSD" -o "$KERNEL" = "OpenBSD" ] ; then
+    assertHaveCommand ps
+    CMD='ps axo user,pid,%cpu,cputime,%mem,rss,vsz,tt,state,start,etime,command'
 fi
 
 # shellcheck disable=SC2016

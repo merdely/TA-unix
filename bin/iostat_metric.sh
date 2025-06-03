@@ -11,7 +11,7 @@
 assertHaveCommand column
 
 if [ "$KERNEL" = "Linux" ] ; then
-	CMD='iostat -xky 1 1'
+	CMD='iostat -xky 60 1'
 	assertHaveCommand "$CMD"
 	if [ ! -f "/etc/os-release" ] ; then
         DEFINE="-v OSName=$(cat /etc/*release | head -n 1| awk -F" release " '{print $1}'| tr ' ' '_') -v OS_version=$(cat /etc/*release | head -n 1| awk -F" release " '{print $2}' | cut -d\. -f1) -v IP_address=$(ip -4 route show default | awk '{print $9}')"
@@ -22,7 +22,7 @@ if [ "$KERNEL" = "Linux" ] ; then
 	# shellcheck disable=SC2016
     PRINTF='{if ($0~/Device/) {printf "%s OSName OS_version IP_address \n", $0} else if (NF!=0) {printf "%s %s %s %s\n", $0, OSName, OS_version, IP_address}}'
 elif [ "$KERNEL" = "SunOS" ] ; then
-	CMD='iostat -xn 1 2'
+	CMD='iostat -xn 60 2'
 	# jscpd:ignore-start
 	assertHaveCommand "$CMD"
     DEFINE="-v OSName=$(uname -s) -v OS_version=$(uname -r) -v IP_address=$(ifconfig -a | grep 'inet ' | grep -v 127.0.0.1 | cut -d\  -f2 | head -n 1)"
@@ -31,7 +31,7 @@ elif [ "$KERNEL" = "SunOS" ] ; then
 	PRINTF='{if ($0~/device/ && /r\/s/ && /w\/s/) {printf "%s OSName OS_version IP_address \n", $0} else if (NF!=0) {printf "%s %s %s %s\n", $0, OSName, OS_version, IP_address}}'
 	# jscpd:ignore-end
 elif [ "$KERNEL" = "AIX" ] ; then
-	CMD='iostat  1 2'
+	CMD='iostat  60 2'
 	assertHaveCommand "$CMD"
     DEFINE="-v OSName=$(uname -s) -v OS_version=$(oslevel -r | cut -d'-' -f1) -v IP_address=$(ifconfig -a | grep 'inet ' | grep -v 127.0.0.1 | cut -d\  -f2 | head -n 1)"
 	FILTER='/^cd/ {next} /Disks/ && /Kb_read/ && /Kb_wrtn/ {f++;} f==2'
@@ -45,7 +45,7 @@ elif [ "$KERNEL" = "OpenBSD" ] ; then
 	HEADERIZE="BEGIN {print \"$HEADER\"}"
 	FILTER=$HEADERIZE'/^[^ \t]/ && !/^(DEVICE|Totals)/{printf "%-7s %.2f  %.2f  %d    %d     %s  %s        %s\n", $1, $2/1024, $3/1024, $4, $5, OSName, OS_version, IP_address}'
 elif [ "$KERNEL" = "FreeBSD" ] ; then
-	CMD='iostat -x -c 2'
+	CMD='iostat -x -c 2 -w 60'
 	assertHaveCommand "$CMD"
     DEFINE="-v OSName=$(uname -s) -v OS_version=$(uname -r) -v IP_address=$(ifconfig -a | grep 'inet ' | grep -v 127.0.0.1 | cut -d\  -f2 | head -n 1)"
 	FILTER='/device/ && /r\/s/ && /w\/s/ {f++;} f==2'

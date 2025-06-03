@@ -18,7 +18,8 @@ else
 fi
 CURRENT_AUDIT_FILE=/var/log/audit/audit.log # For handling upgrade scenarios
 TMP_ERROR_FILTER_FILE=$(mktemp) # For filering out "no matches" error from stderr
-AUDIT_FILE="/var/log/audit/audit.log*"
+AUDIT_LOG_DIR="/var/log/audit"
+AUDIT_FILES=$(ls -1 "${AUDIT_LOG_DIR}"/audit.log "${AUDIT_LOG_DIR}"/audit.log.[0-9]* 2>/dev/null | sort -V)
 
 if [ "$KERNEL" = "Linux" ] ; then
     assertHaveCommand service
@@ -28,25 +29,32 @@ if [ "$KERNEL" = "Linux" ] ; then
 
             if [ -e "$SEEK_FILE" ] ; then
                 SEEK_TIME=$(head -1 "$SEEK_FILE")
-                # shellcheck disable=SC2086
-                awk " { print } " $AUDIT_FILE | /sbin/ausearch -i -ts $SEEK_TIME -te $CURRENT_TIME 2>$TMP_ERROR_FILTER_FILE | grep -v "^----";
-                # shellcheck disable=SC2086
-                grep -v "<no matches>" < $TMP_ERROR_FILTER_FILE 1>&2
+                for AUDIT_FILE in $AUDIT_FILES; do
+                    # shellcheck disable=SC2086
+                    /sbin/ausearch -i -ts $SEEK_TIME -te $CURRENT_TIME -if "$AUDIT_FILE" 2>"$TMP_ERROR_FILTER_FILE" | grep -v "^----"
+                    # shellcheck disable=SC2086
+                    grep -v "<no matches>" <"$TMP_ERROR_FILTER_FILE" 1>&2
+                done
 
             elif [ -e "$OLD_SEEK_FILE" ] ; then
                 rm -rf "$OLD_SEEK_FILE" # remove previous checkpoint
-                # start ingesting from the first entry of current audit file
-                # shellcheck disable=SC2086
-                awk ' { print } ' $CURRENT_AUDIT_FILE | /sbin/ausearch -i -te $CURRENT_TIME 2>$TMP_ERROR_FILTER_FILE | grep -v "^----";
-                # shellcheck disable=SC2086
-                grep -v "<no matches>" <$TMP_ERROR_FILTER_FILE 1>&2
+                for AUDIT_FILE in $AUDIT_FILES; do
+                    # start ingesting from the first entry of current audit file
+                    # shellcheck disable=SC2086
+                    /sbin/ausearch -i -te $CURRENT_TIME -if "$AUDIT_FILE" 2>"$TMP_ERROR_FILTER_FILE" | grep -v "^----"
+                    # shellcheck disable=SC2086
+                    grep -v "<no matches>" <"$TMP_ERROR_FILTER_FILE" 1>&2
+                done
 
             else
                 # no checkpoint found
-                # shellcheck disable=SC2086
-                awk " { print } " $AUDIT_FILE | /sbin/ausearch -i -te $CURRENT_TIME 2>$TMP_ERROR_FILTER_FILE | grep -v "^----";
-                # shellcheck disable=SC2086
-                grep -v "<no matches>" <$TMP_ERROR_FILTER_FILE 1>&2
+                for AUDIT_FILE in $AUDIT_FILES; do
+                    # shellcheck disable=SC2086
+                    /sbin/ausearch -i -te $CURRENT_TIME -if "$AUDIT_FILE" 2>"$TMP_ERROR_FILTER_FILE" | grep -v "^----"
+                    # shellcheck disable=SC2086
+                    grep -v "<no matches>" <"$TMP_ERROR_FILTER_FILE" 1>&2
+                done
+
             fi
             echo "$CURRENT_TIME" > "$SEEK_FILE" # Checkpoint+
 
