@@ -10,7 +10,6 @@ FORMAT='{key = $1; if (NF == 1) {value = "<notAvailable>"} else {value = $2; for
 PRINTF='{printf("%-20s  %-s\n", key, value)}'
 
 if [ "$KERNEL" = "Linux" ] ; then
-	TMP_ERROR_FILTER_FILE=$(mktemp) # For filtering out lshw warning from stderr
 	queryHaveCommand ip
 	FOUND_IP=$?
 	# CPUs
@@ -59,6 +58,7 @@ if [ "$KERNEL" = "Linux" ] ; then
 			printf "%s, %s\n", vendor, product;
 			exit
 		}'
+		TMP_ERROR_FILTER_FILE=$(mktemp /tmp/splunk_hardware.XXXXXXXXXXXXXXXXX) # For filtering out lshw warning from stderr
 		NIC_TYPE=$(lshw -class network 2>$TMP_ERROR_FILTER_FILE | awk "$PARSE_1")
 		# shellcheck disable=SC2086
         grep -v "you should run this program as super-user" < $TMP_ERROR_FILTER_FILE 1>&2

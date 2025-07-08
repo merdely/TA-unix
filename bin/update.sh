@@ -6,8 +6,6 @@
 # shellcheck disable=SC1091
 . "$(dirname "$0")"/common.sh
 
-TMP_ERROR_FILTER_FILE=$(mktemp) # For filering out apt warning from stderr
-
 if [ "$KERNEL" = "Linux" ] ; then
 	assertHaveCommand date
     OSName=$(cat /etc/*release | grep '\bNAME=' | cut -d '=' -f2 | tr ' ' '_' | cut -d\" -f2)
@@ -154,6 +152,7 @@ else
 	failUnsupportedScript
 fi
 
+TMP_ERROR_FILTER_FILE=$(mktemp /tmp/splunk_update.XXXXXXXXXXXXXXXXX) # For filering out apt warning from stderr
 # shellcheck disable=SC2086
 $CMD 2> $TMP_ERROR_FILTER_FILE | tee "$TEE_DEST" | $AWK "$MESSAGE"
 # shellcheck disable=SC2086

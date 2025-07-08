@@ -17,13 +17,13 @@ else
   SEEK_FILE=$HOME/.splunk_unix_audit_seektime
 fi
 CURRENT_AUDIT_FILE=/var/log/audit/audit.log # For handling upgrade scenarios
-TMP_ERROR_FILTER_FILE=$(mktemp) # For filering out "no matches" error from stderr
 AUDIT_LOG_DIR="/var/log/audit"
 AUDIT_FILES=$(ls -1 "${AUDIT_LOG_DIR}"/audit.log "${AUDIT_LOG_DIR}"/audit.log.[0-9]* 2>/dev/null | sort -V)
 
 if [ "$KERNEL" = "Linux" ] ; then
     assertHaveCommand service
     assertHaveCommandGivenPath /sbin/ausearch
+    TMP_ERROR_FILTER_FILE=$(mktemp /tmp/splunk_rlog.XXXXXXXXXXXXXXXXX) # For filering out "no matches" error from stderr
     if [ -n "$(service auditd status 2>/dev/null)" ] && [ "$(service auditd status 2>/dev/null)" ] ; then
             CURRENT_TIME=$(date --date="1 seconds ago"  "+%x %T") # 1 second ago to avoid data loss
 

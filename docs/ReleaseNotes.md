@@ -1,6 +1,10 @@
 # Technical Add-on for Unix and Linux
 
-## Version 10.0.0.0 (2025-06-03)
+## Version 10.1.0.1 (2025-07-08)
+
+Fix problem where files created by mktemp were not cleaned up
+
+## Version 10.1.0.0 (2025-06-03)
 
 Merge in Splunk Add-On for Unix and Linux version 10.1.0
 
