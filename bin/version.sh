@@ -15,8 +15,8 @@ if [ "$KERNEL" = "Linux" ] ; then
 	NAME=$(grep "^NAME=" /etc/*-release | cut -d= -f2 | sed 's/^["]*//;s/["]*$//' | paste -sd " " -)
 	VERSION_ID=$(grep "^VERSION_ID=" /etc/*-release | cut -d= -f2 | sed 's/^["]*//;s/["]*$//' | paste -sd " " -)
 	MACHINE_ARCH=$(uname -p)
-	which dpkg > /dev/null 2>&1 && MACHINE_ARCH=$(dpkg --print-architecture)
-	which pacman > /dev/null 2>&1 && MACHINE_ARCH=$(uname -m | sed -r "s/(armv7l|aarch64)/arm64/;s/x86_64/amd64/") && VERSION=rolling && VERSION_ID=rolling
+	queryHaveCommand dpkg && MACHINE_ARCH=$(dpkg --print-architecture)
+	queryHaveCommand pacman && MACHINE_ARCH=$(uname -m | sed -r "s/(armv7l|aarch64)/arm64/;s/x86_64/amd64/") && VERSION=rolling && VERSION_ID=rolling
 	CMD="eval date ; eval uname -m ; echo \"$VERSION\" ; echo \"$NAME\" ; echo \"$VERSION_ID\" ; echo \"$MACHINE_ARCH\" ; eval uname -s ; eval uname -v ; eval uname -r"
 elif [ "$KERNEL" = "SunOS" ] || [ "$KERNEL" = "FreeBSD" ] || [ "$KERNEL" = "OpenBSD" ] ; then
 	assertHaveCommand date
