@@ -21,4 +21,7 @@
     ```
     * * * * * /srv/TA-unix/extra/run_nix_ta_commands
     ```
+1. (Optional) Add sudoers line for splunk user to get package information
+    1. Arch Linux: `splunk ALL=(root) NOPASSWD: /usr/bin/pacman -Syy`
+    1. Debian/Ubuntu: `splunk ALL=(root) NOPASSWD: /usr/bin/apt update`
 
