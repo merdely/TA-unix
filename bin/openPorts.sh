@@ -1,5 +1,5 @@
 #!/bin/sh
-# SPDX-FileCopyrightText: 2024 Splunk, Inc.
+# SPDX-FileCopyrightText: 2025 Splunk LLC
 # SPDX-License-Identifier: Apache-2.0
 
 # a similar effect can be accomplished with: "nc -z 127.0.0.1 1-32768", and "nc -zu 127.0.0.1 1-32768"

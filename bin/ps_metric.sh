@@ -1,6 +1,6 @@
 #!/bin/sh
 # Copyright (C) 2025 Michael Erdely All Rights Reserved.
-# SPDX-FileCopyrightText: 2024 Splunk, Inc.
+# SPDX-FileCopyrightText: 2025 Splunk LLC
 # SPDX-License-Identifier: Apache-2.0
 
 # jscpd:ignore-start
@@ -10,7 +10,7 @@
 # shellcheck disable=SC2166
 if [ "$KERNEL" = "Linux" ] ; then
     assertHaveCommand ps
-    CMD='ps -wweo user,pid,%cpu,%mem,vsz,rss,tname,stat,start_time,bsdtime,etime,command'
+    CMD='ps -wweo user:32,pid,%cpu,%mem,vsz,rss,tname,stat,start_time,bsdtime,etime,command'
     if [ ! -f "/etc/os-release" ] ; then
         DEFINE="-v OSName=$(cat /etc/*release | head -n 1| awk -F" release " '{print $1}'| tr ' ' '_') -v OS_version=$(cat /etc/*release | head -n 1| awk -F" release " '{print $2}' | cut -d\. -f1) -v IP_address=$(hostname -I | cut -d\  -f1) -v IPv6_Address=$(ip -6 -brief address show scope global | xargs | cut -d ' ' -f 3 | cut -d '/' -f 1)"
     else

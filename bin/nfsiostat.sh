@@ -1,5 +1,5 @@
 #!/bin/sh
-# SPDX-FileCopyrightText: 2024 Splunk, Inc.
+# SPDX-FileCopyrightText: 2025 Splunk LLC
 # SPDX-License-Identifier: Apache-2.0
 
 # shellcheck disable=SC1091
@@ -50,7 +50,7 @@ if [ "$KERNEL" = "Linux" ] ; then
     then
         # shellcheck disable=SC2016
         OS_RELEASE=$(awk -F= '/^ID=/ {gsub(/"/, "", $2); id=$2} /^VERSION_ID=/ {gsub(/"/, "", $2); ver=$2} END {print id ":" ver}' "$OS_FILE")
-        if [ "$OS_RELEASE" = "ubuntu:18.04" ] || [ "$OS_RELEASE" = "ubuntu:20.04" ] || [ "$OS_RELEASE" = "ubuntu:22.04" ] || [ "$OS_RELEASE" = "ubuntu:24.04" ] || [ "$OS_RELEASE" = "rocky:9.5" ] || [ "$OS_RELEASE" = "almalinux:9.5" ] || [ "$OS_RELEASE" = "ol:8.9" ] ; then # Ubuntu 18.04, 20.04 and 22.04 # Rocky or AlmaLinux 9.5 # Oracle Linux 8.9
+        if [ "$OS_RELEASE" = "ubuntu:18.04" ] || [ "$OS_RELEASE" = "ubuntu:20.04" ] || [ "$OS_RELEASE" = "ubuntu:22.04" ] || [ "$OS_RELEASE" = "ubuntu:24.04" ] || [ "$OS_RELEASE" = "rocky:9.5" ] || [ "$OS_RELEASE" = "almalinux:9.5" ] || [ "$OS_RELEASE" = "ol:8.9" ] || [ "$OS_RELEASE" = "rocky:10.0" ] || [ "$OS_RELEASE" = "almalinux:10.0" ] || [ "$OS_RELEASE" = "ol:10.0" ]; then # Ubuntu 18.04, 20.04 and 22.04 # Rocky or AlmaLinux 9.5 # Oracle Linux 8.9
             # shellcheck disable=SC2016
             FORMAT='{
                 if (NR%10==2){
@@ -142,7 +142,7 @@ if [ "$KERNEL" = "Linux" ] ; then
     # For CentOS and RHEL
     else
         #For  RHEL 8.x
-        if [ -e $OS_FILE ] && ( ( (awk -F'=' '/ID=/ {print $2}' $OS_FILE | grep -q rhel) && (awk -F'=' '/VERSION_ID=/ {print $2}' $OS_FILE | grep -Eq 8.7\|8.6\|8.5\|8.4\|8.3\|9) ) || ( (awk -F'=' '/ID=/ {print $2}' $OS_FILE | grep -q cent) && (awk -F'=' '/VERSION_ID=/ {print $2}' $OS_FILE | grep -Eq 8) ) );
+        if [ -e $OS_FILE ] && ( ( (awk -F'=' '/ID=/ {print $2}' $OS_FILE | grep -q rhel) && (awk -F'=' '/VERSION_ID=/ {print $2}' $OS_FILE | grep -Eq 8.7\|8.6\|8.5\|8.4\|8.3\|9\|10.0) ) || ( (awk -F'=' '/ID=/ {print $2}' $OS_FILE | grep -q cent) && (awk -F'=' '/VERSION_ID=/ {print $2}' $OS_FILE | grep -Eq 8) ) );
         then
             # shellcheck disable=SC2016
             FORMAT='{

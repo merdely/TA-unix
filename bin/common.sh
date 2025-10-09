@@ -1,5 +1,5 @@
 #!/bin/sh
-# SPDX-FileCopyrightText: 2024 Splunk, Inc.
+# SPDX-FileCopyrightText: 2025 Splunk LLC
 # SPDX-License-Identifier: Apache-2.0
 
 # shellcheck disable=SC1000-SC9999 # Reason: This script is used in all the scripts and any change in this script would require a higher effort in testing all the scripts. Hence ignoring whole file.

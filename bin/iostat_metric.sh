@@ -1,6 +1,6 @@
 #!/bin/sh
 # Copyright (C) 2025 Michael Erdely All Rights Reserved.
-# SPDX-FileCopyrightText: 2024 Splunk, Inc.
+# SPDX-FileCopyrightText: 2025 Splunk LLC
 # SPDX-License-Identifier: Apache-2.0
 
 # suggested command for testing reads: $ find / -type f 2>/dev/null | xargs wc &> /dev/null &

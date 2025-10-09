@@ -1,6 +1,6 @@
 #!/bin/sh
 # Copyright (C) 2025 Michael Erdely All Rights Reserved.
-# SPDX-FileCopyrightText: 2024 Splunk, Inc.
+# SPDX-FileCopyrightText: 2025 Splunk LLC
 # SPDX-License-Identifier: Apache-2.0
 
 # shellcheck disable=SC1091
@@ -34,7 +34,7 @@ if [ "$KERNEL" = "Linux" ] ; then
         {val=substr(val, 1, length(val)-1); return val}
     }
     {
-		if ($0 ~ /^Filesystem.*/) {
+		if($0 ~ /^Filesystem.*/){
             sub("Mounted on","MountedOn",$0);
             $(NF+1)="OSName";
             $(NF+1)="OS_version";
@@ -237,13 +237,15 @@ elif [ "$KERNEL" = "Darwin" ] ; then
 	#Maps fsType
 	# shellcheck disable=SC2016
 	MAP_FS_TO_TYPE='/ on / {
-		for (i = 1; i <= NF; i++) {
-			if ($i == "on" && $(i + 1) ~ /^\/.*/)
+		for(i=1;i<=NF;i++){
+			if($i=="on" && $(i+1) ~ /^\/.*/)
+			{
 				key=$(i+1);
+			}
 			if($i ~ /^\(/)
-				value = substr($i, 2, length($i) - 2);
+				value=substr($i,2,length($i)-2);
 		}
-		fsTypes[key] = value;
+		fsTypes[key]=value;
 	}'
 	# Append Type and Inode headers to the main header and print respective fields from values stored in MAP_FS_TO_TYPE variables
     # shellcheck disable=SC2016

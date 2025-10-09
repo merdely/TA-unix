@@ -1,5 +1,5 @@
 #!/bin/sh
-# SPDX-FileCopyrightText: 2024 Splunk, Inc.
+# SPDX-FileCopyrightText: 2025 Splunk LLC
 # SPDX-License-Identifier: Apache-2.0
 
 # shellcheck disable=SC1091
@@ -8,10 +8,10 @@
 # shellcheck disable=SC2166
 if [ "$KERNEL" = "Linux" ] ; then
     assertHaveCommand ps
-    CMD='ps -wweo user,pid,%cpu,%mem,vsz,rss,tname,stat,start_time,bsdtime,etime,command'
+    CMD='ps -wweo user:32,pid,%cpu,%mem,vsz,rss,tname,stat,start_time,bsdtime,etime,command'
 elif [ "$KERNEL" = "AIX" ] ; then
     assertHaveCommandGivenPath /usr/sysv/bin/ps
-    CMD='/usr/sysv/bin/ps -eo user,pid,psr,pcpu,time,pmem,rss,vsz,tty,s,etime,args'
+    CMD='/usr/sysv/bin/ps -X -eo user,pid,psr,pcpu,time,pmem,rss,vsz,tty,s,etime,args'
 elif [ "$KERNEL" = "SunOS" ] ; then
     assertHaveCommandGivenPath /usr/bin/ps
     CMD='/usr/bin/ps -eo user,pid,psr,pcpu,time,pmem,rss,vsz,tty,s,etime,args'

@@ -18,18 +18,18 @@
       "intendedAudience": "IT"
     },
     "commonInformationModels": {
-      "Authentication": "==4.20.2",
-      "Change": "==4.20.2",
-      "Endpoint": "==4.20.2",
-      "Inventory": "==4.20.2",
-      "Network Sessions": "==6.0.2",
-      "Performance": "==4.20.2"
+      "Authentication": "==6.2.0",
+      "Change": "==6.2.0",
+      "Endpoint": "==6.2.0",
+      "Inventory": "==6.2.0",
+      "Network Sessions": "==6.2.0",
+      "Performance": "==6.2.0"
     },
     "description": "Technical Add-on for Unix and Linux",
     "id": {
       "group": null,
       "name": "TA-unix",
-      "version": "10.1.0.1"
+      "version": "10.2.0.1"
     },
     "license": {
       "name": "Splunk Software License Agreement",

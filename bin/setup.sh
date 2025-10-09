@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Copyright (C) 2025 Michael Erdely All Rights Reserved.
-# SPDX-FileCopyrightText: 2024 Splunk, Inc.
+# SPDX-FileCopyrightText: 2025 Splunk LLC
 # SPDX-License-Identifier: Apache-2.0
 
 function build_scripted_input_endpoint()

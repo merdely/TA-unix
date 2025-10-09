@@ -1,5 +1,5 @@
 ##
-## SPDX-FileCopyrightText: 2024 Splunk, Inc.
+## SPDX-FileCopyrightText: 2025 Splunk LLC
 ## SPDX-License-Identifier: LicenseRef-Splunk-8-2021
 ##
 ##
