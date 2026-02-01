@@ -6,3 +6,16 @@ For documentation, see: https://git.erdelynet.com/mike/TA-unix/src/branch/main/d
 
 For documentation on Splunk's Add-on for Unix and Linux (which applies to this TA too), see:
 https://docs.splunk.com/Documentation/AddOns/released/UnixLinux/
+
+## Repository Info
+
+- Repository home: https://git.erdelynet.com/mike/TA-unix
+- Github Mirror: https://github.com/merdely/TA-unix
+
+## Issues / Pull Requests
+
+Issues and other interactions should take place in the Github Mirror
+
+- https://github.com/merdely/TA-unix/issues
+- https://github.com/merdely/TA-unix/pulls
+
