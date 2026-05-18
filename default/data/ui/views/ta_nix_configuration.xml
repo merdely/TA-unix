@@ -16,7 +16,7 @@
             <p id="overview">
                 The Technical Add-on for Unix and Linux provides pre-built data inputs to facilitate
                 Linux and Unix system monitoring using Splunk.  Check out the
-		<a href="https://git.erdelynet.com/mike/TA-unix" target="_blank">
+                <a href="https://codeberg.org/merdely/TA-unix" target="_blank">
                     Technical Add-on for Unix and Linux
                 </a> page
                 for support information, the latest updates, and more.

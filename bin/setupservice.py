@@ -1,4 +1,4 @@
-# Copyright (C) 2025 Michael Erdely All Rights Reserved.
+# Copyright (C) 2025-2026 Michael Erdely All Rights Reserved.
 # SPDX-FileCopyrightText: 2025 Splunk LLC
 # SPDX-License-Identifier: Apache-2.0
 

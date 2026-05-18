@@ -3,7 +3,7 @@
 ## Linux
 
 1. Download the latest release from
-    https://git.erdelynet.com/mike/TA-unix/releases/latest
+    https://codeberg.org/merdely/TA-unix/releases/latest
 1. Extract to /srv with:
     `tar -C /srv -xphf /path/to/tarball.tgz`
 1. Create /etc/nix_ta.conf with:

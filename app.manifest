@@ -45,7 +45,7 @@
     "releaseNotes": {
       "name": "README",
       "text": "./README.txt",
-      "uri": "https://git.erdelynet.com/mike/TA-unix/docs/ReleaseNotes.md"
+      "uri": "https://codeberg.org/merdely/TA-unix/src/branch/main/docs/ReleaseNotes.md"
     },
     "title": "Technical Add-on for Unix and Linux"
   },
