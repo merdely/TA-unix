@@ -3,7 +3,7 @@
         "name": "TA-unix",
         "restRoot": "TA-unix",
         "displayName": "Technical Add-on for Unix and Linux",
-        "version": "10.2.0.0",
+        "version": "10.2.0+1",
         "schemaVersion": "0.0.9",
         "isVisible": true,
         "_uccVersion": "5.69.1"
